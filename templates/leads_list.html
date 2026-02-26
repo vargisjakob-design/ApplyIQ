@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Leads{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+    <h1 class="text-3xl font-bold text-slate-900">Leads</h1>
+    <div class="flex gap-3 flex-wrap">
+        <a href="{{ url_for('stale_leads') }}" class="bg-amber-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-amber-600 text-center transition text-sm">
+            ⏰ Stale Leads
+        </a>
+        <a href="{{ url_for('add_lead') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 text-center transition">
+            + Add New Lead
+        </a>
+    </div>
+</div>
+
+<div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-4">
+        <p class="text-blue-800 text-sm font-semibold">📊 Total Leads: {{ total_leads }} (Page {{ page }} of {{ total_pages }})</p>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-slate-100 p-4 sm:p-6 mb-6">
+    <form method="GET">
+        <div class="mb-4">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    name="search" 
+                    value="{{ request.args.get('search', '') }}"
+                    placeholder="🔍 Search by name, phone, email, country, course..." 
+                    class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                >
+                {% if request.args.get('search') %}
+                <a href="{{ url_for('leads_list') }}" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                    ✕
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <select name="status" class="px-4 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                <option value="">All Statuses</option>
+                {% set s = request.args.get('status') %}
+                {% if s and s not in ['New / Not Yet Contacted', 'Contacted', 'Interested', 'Follow-up', 'Follow-up Scheduled', 'On-Hold', 'Registered', 'Disqualified', 'Not Interested', 'Closed - Won', 'Closed - Lost'] %}
+                    <option value="{{ s }}" selected>{{ s }} (legacy)</option>
+                {% endif %}
+                <option value="Not Yet Contacted" {% if s == 'Not Yet Contacted' %}selected{% endif %}>Not Yet Contacted</option>
+                <option value="Contacted" {% if s == 'Contacted' %}selected{% endif %}>Contacted</option>
+                <option value="Interested" {% if s == 'Interested' %}selected{% endif %}>Interested</option>
+                <option value="Follow-up" {% if s == 'Follow-up' %}selected{% endif %}>Follow-up</option>
+                <option value="Follow-up Scheduled" {% if s == 'Follow-up Scheduled' %}selected{% endif %}>Follow-up Scheduled</option>
+                <option value="On-Hold" {% if s == 'On-Hold' %}selected{% endif %}>On-Hold</option>
+                <option value="Registered" {% if s == 'Registered' %}selected{% endif %}>Registered</option>
+                <option value="Disqualified" {% if s == 'Disqualified' %}selected{% endif %}>Disqualified</option>
+                <option value="Not Interested" {% if s == 'Not Interested' %}selected{% endif %}>Not Interested</option>
+                <option value="Closed - Won" {% if s == 'Closed - Won' %}selected{% endif %}>Closed - Won</option>
+                <option value="Closed - Lost" {% if s == 'Closed - Lost' %}selected{% endif %}>Closed - Lost</option>
+            </select>
+            
+            <select name="category" class="px-4 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                <option value="">All Categories</option>
+                <option value="Hot" {% if request.args.get('category') == 'Hot' %}selected{% endif %}>Hot</option>
+                <option value="Warm" {% if request.args.get('category') == 'Warm' %}selected{% endif %}>Warm</option>
+                <option value="Cold" {% if request.args.get('category') == 'Cold' %}selected{% endif %}>Cold</option>
+            </select>
+            
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium transition">
+                Apply Filters
+            </button>
+            <a href="{{ url_for('leads_list') }}" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-200 text-sm font-medium text-center transition">
+                Clear
+            </a>
+        </div>
+        
+        {% if request.args.get('search') %}
+        <div class="mt-4 text-sm text-slate-600 border-t pt-4">
+            Searching for: <strong class="text-blue-600">"{{ request.args.get('search') }}"</strong>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
+    {% if session.role == 'super_admin' and counsellors %}
+    <!-- Bulk action bar (hidden until checkboxes selected) -->
+    <div id="bulk-action-bar"
+         class="hidden items-center gap-3 bg-indigo-50 border-b border-indigo-200 px-4 py-3 flex-wrap">
+        <span id="bulk-count" class="text-sm font-bold text-indigo-700">0 leads selected</span>
+        <form method="POST" action="{{ url_for('bulk_reassign_leads') }}"
+              id="bulk-reassign-form" class="flex items-center gap-2 flex-wrap">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <!-- Lead IDs injected by JS -->
+            <select name="new_user_id" required
+                    class="text-sm border border-indigo-300 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <option value="">Reassign to…</option>
+                {% for c in counsellors %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit"
+                    class="bg-indigo-600 text-white text-sm font-bold px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition">
+                ✅ Reassign Selected
+            </button>
+        </form>
+        <button onclick="clearSelection()"
+                class="text-xs text-indigo-500 underline hover:text-indigo-700 ml-auto">
+            Clear selection
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-100">
+                <tr>
+                    {% if session.role == 'super_admin' and counsellors %}
+                    <th class="px-4 py-3 w-10">
+                        <input type="checkbox" id="select-all"
+                               class="w-4 h-4 rounded border-slate-300 text-indigo-600 cursor-pointer"
+                               onchange="toggleSelectAll(this)">
+                    </th>
+                    {% endif %}
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">WhatsApp</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Name</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Phone</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700 hidden md:table-cell">Country</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700 hidden lg:table-cell">Course</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700 hidden xl:table-cell">Score</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700 hidden md:table-cell">Assigned To</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for lead in leads %}
+                <tr class="hover:bg-slate-50" data-lead-id="{{ lead.id }}">
+                    {% if session.role == 'super_admin' and counsellors %}
+                    <td class="px-4 py-4 w-10">
+                        <input type="checkbox"
+                               class="lead-checkbox w-4 h-4 rounded border-slate-300 text-indigo-600 cursor-pointer"
+                               value="{{ lead.id }}"
+                               onchange="updateBulkBar()">
+                    </td>
+                    {% endif %}
+                    <td class="px-4 py-4 text-center">
+                        {% if lead.whatsapp %}
+                        {% set wa_num = lead.whatsapp.replace('+', '').replace(' ', '').replace('-', '') %}
+                        {% set wa_msg = "Hi " ~ lead.name ~ ", this is " ~ session.user_name ~ " from our study abroad team. Following up on your enquiry" ~ (" about studying in " ~ lead.country_preference if lead.country_preference else "") ~ ". Please let me know a convenient time to connect. 😊" %}
+                        <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg | urlencode }}" target="_blank"
+                           title="WhatsApp {{ lead.name }} with follow-up message"
+                           class="inline-flex items-center justify-center w-8 h-8 bg-green-500 hover:bg-green-600 text-white rounded-full transition">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        </a>
+                        {% else %}
+                        <span class="text-gray-400 text-xs">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-4 font-semibold text-slate-900">{{ lead.name }}</td>
+                    <td class="px-4 py-4 text-slate-700">{{ lead.phone }}</td>
+                    <td class="px-4 py-4 text-slate-700 hidden md:table-cell">{{ lead.country_preference or 'N/A' }}</td>
+                    <td class="px-4 py-4 text-slate-700 hidden lg:table-cell">{{ lead.course_type or 'N/A' }}</td>
+                    <td class="px-4 py-4">
+                        <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
+                            {{ lead.lead_status }}
+                        </span>
+                        {% set urgency = get_intake_urgency(lead.country_preference, lead.lead_status) %}
+                        {% if urgency %}
+                        <span class="block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap
+                            {% if urgency.level == 'critical' %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+                            {% if urgency.level == 'critical' %}🔴{% else %}⚠️{% endif %}
+                            {{ urgency.intake_date_str }} intake in {{ urgency.days_until }}d
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-4 hidden xl:table-cell">
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full {% if lead.category == 'Hot' %}bg-red-100 text-red-800{% elif lead.category == 'Warm' %}bg-yellow-100 text-yellow-800{% else %}bg-slate-100 text-slate-700{% endif %}">
+                            {{ lead.score }} - {{ lead.category }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-4 text-slate-700 hidden md:table-cell">{{ lead.assigned_user_name }}</td>
+                    <td class="px-4 py-4">
+                        <a href="{{ url_for('view_lead', lead_id=lead.id) }}" class="inline-block bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition whitespace-nowrap">
+                            View Details
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="px-4 py-12 text-center text-slate-500">
+                        <div class="flex flex-col items-center">
+                            <span class="text-4xl mb-2">🔍</span>
+                            <p class="font-semibold text-slate-700">No leads found</p>
+                            <p class="text-sm text-slate-500">Try adjusting your search or filters.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if session.role == 'super_admin' and counsellors %}
+<script>
+function updateBulkBar() {
+    var checked = document.querySelectorAll('.lead-checkbox:checked');
+    var bar     = document.getElementById('bulk-action-bar');
+    var count   = document.getElementById('bulk-count');
+    var form    = document.getElementById('bulk-reassign-form');
+
+    // Remove previously injected hidden inputs
+    form.querySelectorAll('input[name="lead_ids"]').forEach(function(el) { el.remove(); });
+
+    checked.forEach(function(cb) {
+        var inp = document.createElement('input');
+        inp.type  = 'hidden';
+        inp.name  = 'lead_ids';
+        inp.value = cb.value;
+        form.appendChild(inp);
+    });
+
+    count.textContent = checked.length + ' lead' + (checked.length !== 1 ? 's' : '') + ' selected';
+    if (checked.length > 0) {
+        bar.classList.remove('hidden');
+        bar.classList.add('flex');
+    } else {
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+    }
+    // Sync select-all state
+    var all = document.querySelectorAll('.lead-checkbox');
+    document.getElementById('select-all').indeterminate = (checked.length > 0 && checked.length < all.length);
+    document.getElementById('select-all').checked = (checked.length === all.length && all.length > 0);
+}
+function toggleSelectAll(master) {
+    document.querySelectorAll('.lead-checkbox').forEach(function(cb) {
+        cb.checked = master.checked;
+    });
+    updateBulkBar();
+}
+function clearSelection() {
+    document.querySelectorAll('.lead-checkbox').forEach(function(cb) { cb.checked = false; });
+    document.getElementById('select-all').checked = false;
+    updateBulkBar();
+}
+</script>
+{% endif %}
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<div class="bg-white rounded-lg shadow-sm border border-slate-100 p-4 sm:p-6">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-sm text-slate-600">
+            Showing {{ ((page - 1) * per_page + 1) }} to {{ ((page - 1) * per_page + leads|length) }} of {{ total_leads }} leads
+        </div>
+        <div class="flex gap-2">
+            {% if page > 1 %}
+                <a href="{{ url_for('leads_list', page=page-1, status=status_filter, category=category_filter, search=search_query) }}" 
+                   class="px-3 py-2 bg-white border border-slate-300 rounded-md hover:bg-slate-50 text-sm font-medium text-slate-700">
+                    ← Previous
+                </a>
+            {% endif %}
+            
+            {% for p in range(1, total_pages + 1) %}
+                {% if p == page %}
+                    <span class="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium">{{ p }}</span>
+                {% elif p <= 3 or p >= total_pages - 2 or (p >= page - 2 and p <= page + 2) %}
+                    <a href="{{ url_for('leads_list', page=p, status=status_filter, category=category_filter, search=search_query) }}" 
+                       class="px-3 py-2 bg-white border border-slate-300 rounded-md hover:bg-slate-50 text-sm font-medium text-slate-700">
+                        {{ p }}
+                    </a>
+                {% elif p == 4 or p == total_pages - 3 %}
+                    <span class="px-3 py-2 text-slate-500">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page < total_pages %}
+                <a href="{{ url_for('leads_list', page=page+1, status=status_filter, category=category_filter, search=search_query) }}" 
+                   class="px-3 py-2 bg-white border border-slate-300 rounded-md hover:bg-slate-50 text-sm font-medium text-slate-700">
+                    Next →
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

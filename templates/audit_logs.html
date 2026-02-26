@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs{% endblock %}
+
+{% block content %}
+<div class="max-w-[1600px] mx-auto p-4 sm:p-6">
+    <h1 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-slate-900">Audit Logs</h1>
+
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <p class="text-sm text-blue-800">
+            <strong>Audit Trail:</strong> This log records all critical actions performed on leads. 
+            {% if session.role == 'super_admin' %}
+            As a super admin, you can see all company audit logs.
+            {% else %}
+            You can see logs related to your assigned leads and your own actions.
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">Timestamp</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">User</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">Action</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">Lead</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">IP Address</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for log in logs %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3 text-slate-600 whitespace-nowrap">{{ log.timestamp|ddmmyyyy }}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">{{ log.user_name or 'System' }}</td>
+                        <td class="px-4 py-3 text-slate-700">{{ log.action }}</td>
+                        <td class="px-4 py-3 text-slate-700 whitespace-nowrap">
+                            {% if log.lead_name %}
+                                <a href="{{ url_for('view_lead', lead_id=log.lead_id) }}" class="text-blue-600 hover:text-blue-800 font-medium">
+                                    {{ log.lead_name }} ({{ log.lead_phone }})
+                                </a>
+                            {% else %}
+                                <span class="text-slate-400">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-slate-500 text-xs">{{ log.ip_address or 'N/A' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-4 py-12 text-center text-slate-500">
+                            <div class="flex flex-col items-center">
+                                <span class="text-4xl mb-2">📄</span>
+                                No audit logs found
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-4 sm:p-6 mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="text-sm text-slate-600">
+                Showing {{ ((page - 1) * per_page + 1) }} to {{ ((page - 1) * per_page + logs|length) }} of {{ total_logs }} logs
+            </div>
+            <div class="flex gap-2">
+                {% if page > 1 %}
+                    <a href="{{ url_for('audit_logs', page=page-1) }}" 
+                       class="px-3 py-2 bg-white border border-slate-300 rounded-md hover:bg-slate-50 text-sm font-medium text-slate-700">
+                        ← Previous
+                    </a>
+                {% endif %}
+                
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <span class="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium">{{ p }}</span>
+                    {% elif p <= 3 or p >= total_pages - 2 or (p >= page - 2 and p <= page + 2) %}
+                        <a href="{{ url_for('audit_logs', page=p) }}" 
+                           class="px-3 py-2 bg-white border border-slate-300 rounded-md hover:bg-slate-50 text-sm font-medium text-slate-700">
+                            {{ p }}
+                        </a>
+                    {% elif p == 4 or p == total_pages - 3 %}
+                        <span class="px-3 py-2 text-slate-500">...</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page < total_pages %}
+                    <a href="{{ url_for('audit_logs', page=page+1) }}" 
+                       class="px-3 py-2 bg-white border border-slate-300 rounded-md hover:bg-slate-50 text-sm font-medium text-slate-700">
+                        Next →
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 sm:p-5">
+        <h3 class="font-semibold mb-3 text-slate-900">What is logged?</h3>
+        <ul class="list-disc list-inside text-sm text-slate-700 space-y-1.5 ml-1">
+            <li>Lead creation</li>
+            <li>Lead edits (with detailed change history)</li>
+            <li>Lead deletion</li>
+            <li>Lead reassignment</li>
+            <li>CSV imports</li>
+            <li>User management actions (super admin only)</li>
+        </ul>
+        <p class="text-xs text-slate-500 mt-4 pt-3 border-t border-slate-200">
+            Note: Audit logs are immutable and cannot be edited or deleted.
+        </p>
+    </div>
+</div>
+{% endblock %}

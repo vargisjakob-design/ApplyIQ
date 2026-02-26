@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="max-w-[1600px] mx-auto p-4 sm:p-6">
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4 text-slate-900">Reports & Analytics</h1>
+    <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-6 sm:mb-8">
+        <p class="text-blue-800 text-sm sm:text-base"><strong>Report Period:</strong> {{ date_range_display }}</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-4 sm:p-6 mb-6">
+        <h2 class="text-lg sm:text-xl font-bold mb-4 text-slate-900">Select Report Period</h2>
+        <form method="GET" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4">
+            <button type="submit" name="period" value="daily" class="px-3 py-2 text-sm {% if period == 'daily' %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200 text-slate-700{% endif %} rounded-lg font-medium transition">
+                Daily
+            </button>
+            <button type="submit" name="period" value="weekly" class="px-3 py-2 text-sm {% if period == 'weekly' %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200 text-slate-700{% endif %} rounded-lg font-medium transition">
+                Weekly
+            </button>
+            <button type="submit" name="period" value="monthly" class="px-3 py-2 text-sm {% if period == 'monthly' or not period %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200 text-slate-700{% endif %} rounded-lg font-medium transition">
+                Monthly
+            </button>
+            <button type="submit" name="period" value="yearly" class="px-3 py-2 text-sm {% if period == 'yearly' %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200 text-slate-700{% endif %} rounded-lg font-medium transition">
+                Yearly
+            </button>
+            <button type="button"
+                hx-get="/modal/custom-date"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
+                class="px-3 py-2 text-sm col-span-2 sm:col-span-1 {% if period == 'custom' %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200 text-slate-700{% endif %} rounded-lg font-medium transition">
+                Custom Range
+            </button>
+        </form>
+    </div>
+
+    <!-- Key Metrics Dashboard -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+
+        <a href="{{ url_for('report_drilldown', filter='total', period=period, start_date=start_date, end_date=end_date) }}"
+           class="block bg-white rounded-lg shadow-sm border border-slate-100 p-6 hover:shadow-md hover:border-blue-200 transition group cursor-pointer">
+            <h3 class="text-slate-500 text-xs sm:text-sm font-semibold uppercase mb-2">Total Leads</h3>
+            <p class="text-3xl sm:text-4xl font-bold text-blue-600 group-hover:text-blue-700">{{ total_leads }}</p>
+            <p class="text-xs text-slate-500 mt-2">Pipeline volume</p>
+            <p class="text-xs text-blue-400 mt-1 opacity-0 group-hover:opacity-100 transition">View list →</p>
+        </a>
+
+        <a href="{{ url_for('report_drilldown', filter='contacted', period=period, start_date=start_date, end_date=end_date) }}"
+           class="block bg-white rounded-lg shadow-sm border border-slate-100 p-6 hover:shadow-md hover:border-green-200 transition group cursor-pointer">
+            <h3 class="text-slate-500 text-xs sm:text-sm font-semibold uppercase mb-2">Response Rate</h3>
+            <p class="text-3xl sm:text-4xl font-bold text-green-600 group-hover:text-green-700">{{ "%.1f"|format(response_rate) }}%</p>
+            <p class="text-xs text-slate-500 mt-2">{{ contacted_leads }} contacted</p>
+            <p class="text-xs text-green-400 mt-1 opacity-0 group-hover:opacity-100 transition">View contacted list →</p>
+        </a>
+
+        <a href="{{ url_for('report_drilldown', filter='won', period=period, start_date=start_date, end_date=end_date) }}"
+           class="block bg-white rounded-lg shadow-sm border border-slate-100 p-6 hover:shadow-md hover:border-purple-200 transition group cursor-pointer">
+            <h3 class="text-slate-500 text-xs sm:text-sm font-semibold uppercase mb-2">Closed Won</h3>
+            <p class="text-3xl sm:text-4xl font-bold text-purple-600 group-hover:text-purple-700">{{ won_leads }}</p>
+            <p class="text-xs text-slate-500 mt-2">{{ "%.1f"|format(conversion_rate) }}% conversion</p>
+            <p class="text-xs text-purple-400 mt-1 opacity-0 group-hover:opacity-100 transition">View won list →</p>
+        </a>
+
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <h3 class="text-slate-500 text-xs sm:text-sm font-semibold uppercase mb-2">Interactions</h3>
+            <p class="text-3xl sm:text-4xl font-bold text-orange-600">{{ interaction_count }}</p>
+            <p class="text-xs text-slate-500 mt-2">Total touchpoints</p>
+        </div>
+    </div>
+
+    <!-- Pipeline Breakdown -->
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 mb-6 sm:mb-8">
+        <h2 class="text-lg sm:text-xl font-bold mb-6 text-slate-900">&#128202; Pipeline Breakdown</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+
+            <a href="{{ url_for('report_drilldown', filter='contacted', period=period, start_date=start_date, end_date=end_date) }}"
+               class="block p-4 rounded-lg bg-blue-50 border border-blue-100 hover:bg-blue-100 hover:border-blue-300 transition group cursor-pointer">
+                <div class="text-3xl font-bold text-blue-700 mb-1">{{ contacted_leads }}</div>
+                <p class="text-sm text-blue-600 font-medium">Contacted</p>
+                <p class="text-xs text-blue-500 mt-1">{{ "%.1f"|format(response_rate) }}% response</p>
+            </a>
+
+            <a href="{{ url_for('report_drilldown', filter='interested', period=period, start_date=start_date, end_date=end_date) }}"
+               class="block p-4 rounded-lg bg-yellow-50 border border-yellow-100 hover:bg-yellow-100 hover:border-yellow-300 transition group cursor-pointer">
+                <div class="text-3xl font-bold text-yellow-700 mb-1">{{ interested_leads }}</div>
+                <p class="text-sm text-yellow-600 font-medium">Interested</p>
+                <p class="text-xs text-yellow-500 mt-1">{{ "%.1f"|format(interest_rate) }}% of contacted</p>
+            </a>
+
+            <a href="{{ url_for('report_drilldown', filter='followup', period=period, start_date=start_date, end_date=end_date) }}"
+               class="block p-4 rounded-lg bg-purple-50 border border-purple-100 hover:bg-purple-100 hover:border-purple-300 transition group cursor-pointer">
+                <div class="text-3xl font-bold text-purple-700 mb-1">{{ followup_leads + followup_scheduled_leads }}</div>
+                <p class="text-sm text-purple-600 font-medium">Follow-up</p>
+                <p class="text-xs text-purple-500 mt-1">{{ followup_scheduled_leads }} scheduled</p>
+            </a>
+
+            <a href="{{ url_for('report_drilldown', filter='registered', period=period, start_date=start_date, end_date=end_date) }}"
+               class="block p-4 rounded-lg bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 hover:border-indigo-300 transition group cursor-pointer">
+                <div class="text-3xl font-bold text-indigo-700 mb-1">{{ registered_leads }}</div>
+                <p class="text-sm text-indigo-600 font-medium">Registered</p>
+                <p class="text-xs text-indigo-500 mt-1">{{ "%.1f"|format(registration_rate) }}% of total</p>
+            </a>
+
+            <a href="{{ url_for('report_drilldown', filter='won', period=period, start_date=start_date, end_date=end_date) }}"
+               class="block p-4 rounded-lg bg-green-50 border border-green-100 hover:bg-green-100 hover:border-green-300 transition group cursor-pointer">
+                <div class="text-3xl font-bold text-green-700 mb-1">{{ won_leads }}</div>
+                <p class="text-sm text-green-600 font-medium">Closed Won</p>
+                <p class="text-xs text-green-500 mt-1">Final conversions</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Lead Quality Score -->
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 mb-6 sm:mb-8">
+        <h2 class="text-lg sm:text-xl font-bold mb-6 text-slate-900">&#128293; Lead Quality Distribution</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+            <a href="{{ url_for('report_drilldown', filter='hot', period=period, start_date=start_date, end_date=end_date) }}"
+               class="block text-center p-6 rounded-xl bg-gradient-to-br from-red-50 to-red-100 border border-red-200 hover:shadow-md hover:border-red-400 transition group cursor-pointer">
+                <div class="text-5xl sm:text-6xl font-bold text-red-600 mb-3 group-hover:text-red-700">{{ hot_count }}</div>
+                <p class="text-sm sm:text-base text-red-700 font-semibold mb-2">&#128293; Hot Leads</p>
+                <p class="text-xs text-red-600">Score 70+ | High conversion potential</p>
+                <div class="mt-3 pt-3 border-t border-red-200">
+                    <p class="text-xs text-red-700">{{ "%.1f"|format((hot_count/total_leads*100) if total_leads > 0 else 0) }}% of pipeline</p>
+                    <p class="text-xs text-red-400 mt-1 opacity-0 group-hover:opacity-100 transition">View list →</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('report_drilldown', filter='warm', period=period, start_date=start_date, end_date=end_date) }}"
+               class="block text-center p-6 rounded-xl bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 hover:shadow-md hover:border-yellow-400 transition group cursor-pointer">
+                <div class="text-5xl sm:text-6xl font-bold text-yellow-600 mb-3 group-hover:text-yellow-700">{{ warm_count }}</div>
+                <p class="text-sm sm:text-base text-yellow-700 font-semibold mb-2">&#9889; Warm Leads</p>
+                <p class="text-xs text-yellow-600">Score 40-69 | Needs nurturing</p>
+                <div class="mt-3 pt-3 border-t border-yellow-200">
+                    <p class="text-xs text-yellow-700">{{ "%.1f"|format((warm_count/total_leads*100) if total_leads > 0 else 0) }}% of pipeline</p>
+                    <p class="text-xs text-yellow-400 mt-1 opacity-0 group-hover:opacity-100 transition">View list →</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('report_drilldown', filter='cold', period=period, start_date=start_date, end_date=end_date) }}"
+               class="block text-center p-6 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 hover:shadow-md hover:border-slate-400 transition group cursor-pointer">
+                <div class="text-5xl sm:text-6xl font-bold text-slate-600 mb-3 group-hover:text-slate-700">{{ cold_count }}</div>
+                <p class="text-sm sm:text-base text-slate-700 font-semibold mb-2">&#10052;&#65039; Cold Leads</p>
+                <p class="text-xs text-slate-600">Score &lt;40 | Low priority</p>
+                <div class="mt-3 pt-3 border-t border-slate-200">
+                    <p class="text-xs text-slate-700">{{ "%.1f"|format((cold_count/total_leads*100) if total_leads > 0 else 0) }}% of pipeline</p>
+                    <p class="text-xs text-slate-400 mt-1 opacity-0 group-hover:opacity-100 transition">View list →</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Win/Loss Analysis -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 sm:mb-8">
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <h2 class="text-lg font-bold mb-5 text-slate-900">&#9989; Success Metrics</h2>
+            <div class="space-y-4">
+                <a href="{{ url_for('report_drilldown', filter='won', period=period, start_date=start_date, end_date=end_date) }}"
+                   class="flex justify-between items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition cursor-pointer">
+                    <span class="text-sm font-semibold text-slate-700">Closed Won</span>
+                    <span class="text-2xl font-bold text-green-600">{{ won_leads }}</span>
+                </a>
+                <a href="{{ url_for('report_drilldown', filter='registered', period=period, start_date=start_date, end_date=end_date) }}"
+                   class="flex justify-between items-center p-3 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition cursor-pointer">
+                    <span class="text-sm font-semibold text-slate-700">Registered (Pending)</span>
+                    <span class="text-2xl font-bold text-indigo-600">{{ registered_leads }}</span>
+                </a>
+                <a href="{{ url_for('report_drilldown', filter='interested', period=period, start_date=start_date, end_date=end_date) }}"
+                   class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition cursor-pointer">
+                    <span class="text-sm font-semibold text-slate-700">Interested</span>
+                    <span class="text-2xl font-bold text-yellow-600">{{ interested_leads }}</span>
+                </a>
+                <div class="pt-3 border-t border-slate-200">
+                    <p class="text-xs text-slate-600"><strong>Success Rate:</strong> {{ "%.1f"|format(((won_leads + registered_leads)/total_leads*100) if total_leads > 0 else 0) }}% (Won + Registered)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <h2 class="text-lg font-bold mb-5 text-slate-900">&#10060; Drop-off Analysis</h2>
+            <div class="space-y-4">
+                <a href="{{ url_for('report_drilldown', filter='lost', period=period, start_date=start_date, end_date=end_date) }}"
+                   class="flex justify-between items-center p-3 bg-red-50 rounded-lg hover:bg-red-100 transition cursor-pointer">
+                    <span class="text-sm font-semibold text-slate-700">Closed Lost</span>
+                    <span class="text-2xl font-bold text-red-600">{{ lost_leads }}</span>
+                </a>
+                <a href="{{ url_for('report_drilldown', filter='not_interested', period=period, start_date=start_date, end_date=end_date) }}"
+                   class="flex justify-between items-center p-3 bg-red-50 rounded-lg hover:bg-red-100 transition cursor-pointer">
+                    <span class="text-sm font-semibold text-slate-700">Not Interested</span>
+                    <span class="text-2xl font-bold text-red-600">{{ not_interested_leads }}</span>
+                </a>
+                <a href="{{ url_for('report_drilldown', filter='on_hold', period=period, start_date=start_date, end_date=end_date) }}"
+                   class="flex justify-between items-center p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition cursor-pointer">
+                    <span class="text-sm font-semibold text-slate-700">On-Hold</span>
+                    <span class="text-2xl font-bold text-orange-600">{{ on_hold_leads }}</span>
+                </a>
+                <a href="{{ url_for('report_drilldown', filter='disqualified', period=period, start_date=start_date, end_date=end_date) }}"
+                   class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer">
+                    <span class="text-sm font-semibold text-slate-700">Disqualified</span>
+                    <span class="text-2xl font-bold text-gray-600">{{ disqualified_leads }}</span>
+                </a>
+                <div class="pt-3 border-t border-slate-200">
+                    <p class="text-xs text-slate-600"><strong>Drop-off Rate:</strong> {{ "%.1f"|format(((lost_leads + not_interested_leads + disqualified_leads)/total_leads*100) if total_leads > 0 else 0) }}%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 mb-6 sm:mb-8">
+        <h2 class="text-lg sm:text-xl font-bold mb-6 text-slate-900">💰 Revenue Summary</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="p-5 rounded-xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200">
+                <p class="text-slate-600 mb-2 text-sm font-medium">Confirmed Revenue (Won)</p>
+                <p class="text-3xl sm:text-4xl font-bold text-green-700">₹{{ "%.0f"|format(won_revenue) }}</p>
+                <p class="text-xs text-green-600 mt-2">From {{ won_leads }} won leads</p>
+            </div>
+            <div class="p-5 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200">
+                <p class="text-slate-600 mb-2 text-sm font-medium">Pending Revenue (Registered)</p>
+                <p class="text-3xl sm:text-4xl font-bold text-indigo-700">₹{{ "%.0f"|format(registered_revenue) }}</p>
+                <p class="text-xs text-indigo-600 mt-2">From {{ registered_leads }} registered</p>
+            </div>
+            <div class="p-5 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
+                <p class="text-slate-600 mb-2 text-sm font-medium">Total Collected</p>
+                <p class="text-3xl sm:text-4xl font-bold text-blue-700">₹{{ "%.0f"|format(total_registration) }}</p>
+                <p class="text-xs text-blue-600 mt-2">Overall registrations</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Insights -->
+    <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl shadow-sm border border-blue-200 p-6 mb-6 sm:mb-8">
+        <h2 class="text-lg sm:text-xl font-bold mb-5 text-slate-900">💡 Key Insights & Recommendations</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg p-5 shadow-sm">
+                <h3 class="font-bold text-green-700 mb-3 flex items-center gap-2">
+                    <span class="text-xl">✅</span> What's Working Well
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    {% if response_rate >= 70 %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-600 mt-0.5">•</span>
+                        <span>Excellent response rate ({{ "%.1f"|format(response_rate) }}%) - keep it up!</span>
+                    </li>
+                    {% endif %}
+                    {% if conversion_rate >= 15 %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-600 mt-0.5">•</span>
+                        <span>Strong conversion rate ({{ "%.1f"|format(conversion_rate) }}%) above industry average</span>
+                    </li>
+                    {% endif %}
+                    {% if hot_count > 0 %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-600 mt-0.5">•</span>
+                        <span>{{ hot_count }} hot leads in pipeline - prioritize these!</span>
+                    </li>
+                    {% endif %}
+                    {% if interaction_count >= total_leads * 2 %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-600 mt-0.5">•</span>
+                        <span>Great engagement with {{ interaction_count }} interactions</span>
+                    </li>
+                    {% endif %}
+                    {% if not (response_rate >= 70 or conversion_rate >= 15 or hot_count > 0) %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-600 mt-0.5">•</span>
+                        <span>You're actively managing {{ total_leads }} leads - keep building momentum!</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-lg p-5 shadow-sm">
+                <h3 class="font-bold text-orange-700 mb-3 flex items-center gap-2">
+                    <span class="text-xl">⚡</span> Areas to Improve
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    {% if response_rate < 50 %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-orange-600 mt-0.5">•</span>
+                        <span>Response rate is {{ "%.1f"|format(response_rate) }}% - follow up faster with new leads</span>
+                    </li>
+                    {% endif %}
+                    {% if conversion_rate < 10 and total_leads > 10 %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-orange-600 mt-0.5">•</span>
+                        <span>Conversion rate is {{ "%.1f"|format(conversion_rate) }}% - focus on lead quality and nurturing</span>
+                    </li>
+                    {% endif %}
+                    {% if (lost_leads + not_interested_leads) > won_leads and total_leads > 5 %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-orange-600 mt-0.5">•</span>
+                        <span>{{ lost_leads + not_interested_leads }} lost vs {{ won_leads }} won - improve qualification early</span>
+                    </li>
+                    {% endif %}
+                    {% if on_hold_leads > total_leads * 0.2 %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-orange-600 mt-0.5">•</span>
+                        <span>{{ on_hold_leads }} leads on hold - re-engage or disqualify</span>
+                    </li>
+                    {% endif %}
+                    {% if warm_count > hot_count * 2 and warm_count > 5 %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-orange-600 mt-0.5">•</span>
+                        <span>Many warm leads ({{ warm_count }}) - add more touchpoints to move them to hot</span>
+                    </li>
+                    {% endif %}
+                    {% if not (response_rate < 50 or conversion_rate < 10) %}
+                    <li class="flex items-start gap-2">
+                        <span class="text-orange-600 mt-0.5">•</span>
+                        <span>Keep optimizing your process - there's always room for growth!</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Action Steps -->
+        <div class="mt-6 bg-white rounded-lg p-5 shadow-sm">
+            <h3 class="font-bold text-purple-700 mb-3 flex items-center gap-2">
+                <span class="text-xl">🎯</span> Recommended Next Steps
+            </h3>
+            <ol class="space-y-2 text-sm list-decimal list-inside">
+                <li>Prioritize {{ hot_count }} hot leads - these have highest conversion potential</li>
+                <li>Schedule follow-ups for {{ followup_leads }} leads waiting for next contact</li>
+                {% if registered_leads > 0 %}
+                <li>Follow up with {{ registered_leads }} registered leads to convert to Won</li>
+                {% endif %}
+                <li>Re-engage {{ on_hold_leads + warm_count }} leads that need attention</li>
+                <li>Review {{ lost_leads + not_interested_leads }} lost leads to identify patterns</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Export Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 mb-6 sm:mb-8">
+        <h2 class="text-lg sm:text-xl font-bold mb-4 text-slate-900">📥 Export Report</h2>
+        <div class="flex flex-col sm:flex-row gap-3 sm:space-x-4">
+            <a href="{{ url_for('export_report', period=period, start_date=start_date, end_date=end_date) }}" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 text-center transition text-sm sm:text-base">
+                Download CSV
+            </a>
+            <button class="bg-slate-100 text-slate-700 px-6 py-3 rounded-lg font-semibold hover:bg-slate-200 text-center transition text-sm sm:text-base">
+                Print Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Advanced Reports Section (keep existing) -->
+    {% if session.role == 'super_admin' %}
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+        <h2 class="text-lg sm:text-xl font-bold mb-4 text-slate-900">Advanced Reports</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <a href="{{ url_for('comparison_report', period=period, start_date=start_date, end_date=end_date) }}" class="bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 text-center text-sm transition">
+                📊 User Comparison Report
+            </a>
+            <a href="{{ url_for('funnel_report', period=period, start_date=start_date, end_date=end_date) }}" class="bg-green-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-green-700 text-center text-sm transition">
+                🎯 Conversion Funnel
+            </a>
+            <a href="{{ url_for('analytics_report', period=period, start_date=start_date, end_date=end_date) }}" class="bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 text-center text-sm transition">
+                📊 Multi-Dimension Analytics
+            </a>
+            <a href="{{ url_for('forecast_report') }}" class="bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-indigo-700 text-center text-sm transition">
+                📈 Conversion Forecast
+            </a>
+            <a href="{{ url_for('activity_report') }}" class="bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-800 text-center text-sm transition">
+                📅 Activity Heatmap
+            </a>
+            <a href="{{ url_for('lead_source_roi') }}" class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 text-center text-sm transition">
+                📣 Lead Source ROI
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+        <h2 class="text-lg sm:text-xl font-bold mb-4 text-slate-900">Analytics</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <a href="{{ url_for('funnel_report', period=period, start_date=start_date, end_date=end_date) }}" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 text-center transition">
+                🎯 My Conversion Funnel
+            </a>
+            <a href="{{ url_for('analytics_report', period=period, start_date=start_date, end_date=end_date) }}" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 text-center transition">
+                📊 My Analytics
+            </a>
+            <a href="{{ url_for('forecast_report') }}" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 text-center transition">
+                📈 My Forecast
+            </a>
+            <a href="{{ url_for('activity_report') }}" class="bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-800 text-center transition">
+                📅 My Activity
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Keep the existing modal script -->
+<div id="modal-container"></div>
+
+{% endblock %}

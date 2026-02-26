@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}My Incentives{% endblock %}
+{% block content %}
+
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">🎯 My Incentives</h1>
+        <p class="text-slate-500 text-sm mt-1">Track your progress, earnings, and how you compare to your peers.</p>
+    </div>
+    {% if session.role == 'super_admin' %}
+    <a href="{{ url_for('incentive_targets') }}"
+       class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 transition flex-shrink-0">
+        ⚙️ Manage Targets
+    </a>
+    {% endif %}
+</div>
+
+{% if my_targets %}
+{% for td in my_targets %}
+{% set target    = td.target %}
+{% set tiers     = td.tiers %}
+{% set my        = td.my_progress %}
+{% set peers     = td.peer_progress %}
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+
+    <!-- Target header -->
+    <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center gap-3">
+        {% if target.is_active %}
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Active</span>
+        {% else %}
+        <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ended</span>
+        {% endif %}
+        <h2 class="text-base font-bold text-slate-900">
+            {{ target.label or (target.period_type | capitalize ~ ' Target') }}
+        </h2>
+        <span class="text-xs text-slate-500 bg-slate-100 rounded-full px-2.5 py-1 font-semibold ml-auto">
+            📅 {{ target.period_start.strftime('%d %b %Y') if target.period_start else '' }} →
+               {{ target.period_end.strftime('%d %b %Y') if target.period_end else '' }}
+        </span>
+    </div>
+
+    <!-- My progress cards -->
+    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-slate-100">
+
+        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-center">
+            <p class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">Registrations</p>
+            <p class="text-3xl font-extrabold text-indigo-700">{{ my.registrations }}</p>
+            <p class="text-xs text-indigo-500 mt-0.5">of {{ target.registration_target }} target</p>
+            <div class="mt-2 w-full bg-indigo-100 rounded-full h-2">
+                <div class="bg-indigo-500 h-2 rounded-full transition-all" style="width: {{ [my.reg_pct, 100] | min }}%"></div>
+            </div>
+            <p class="text-xs font-bold text-indigo-600 mt-1">{{ my.reg_pct }}%</p>
+        </div>
+
+        <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-center">
+            <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">Closed-Won</p>
+            <p class="text-3xl font-extrabold text-emerald-700">{{ my.won }}</p>
+            <p class="text-xs text-emerald-500 mt-0.5">of {{ target.won_target }} target</p>
+            <div class="mt-2 w-full bg-emerald-100 rounded-full h-2">
+                <div class="bg-emerald-500 h-2 rounded-full transition-all" style="width: {{ [my.won_pct, 100] | min }}%"></div>
+            </div>
+            <p class="text-xs font-bold text-emerald-600 mt-1">{{ my.won_pct }}%</p>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-center">
+            <p class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Overall Progress</p>
+            <p class="text-3xl font-extrabold
+                {% if my.overall_pct >= 100 %}text-emerald-600
+                {% elif my.overall_pct >= 75 %}text-indigo-600
+                {% elif my.overall_pct >= 50 %}text-amber-600
+                {% else %}text-slate-500{% endif %}">
+                {{ my.overall_pct }}%
+            </p>
+            <div class="mt-2 w-full bg-amber-100 rounded-full h-2">
+                <div class="h-2 rounded-full transition-all
+                    {% if my.overall_pct >= 100 %}bg-emerald-500
+                    {% elif my.overall_pct >= 75 %}bg-indigo-500
+                    {% elif my.overall_pct >= 50 %}bg-amber-500
+                    {% else %}bg-slate-300{% endif %}"
+                    style="width: {{ [my.overall_pct, 100] | min }}%"></div>
+            </div>
+            <p class="text-xs text-amber-600 mt-1 font-semibold">avg of both targets</p>
+        </div>
+
+        <div class="rounded-2xl p-4 text-center border
+            {% if my.earned_amount > 0 %}bg-gradient-to-br from-indigo-600 to-purple-600 border-indigo-500 text-white
+            {% else %}bg-slate-50 border-slate-200{% endif %}">
+            <p class="text-xs font-bold uppercase tracking-wider mb-1
+                {% if my.earned_amount > 0 %}text-indigo-200{% else %}text-slate-400{% endif %}">
+                Incentive Earned
+            </p>
+            <p class="text-3xl font-extrabold {% if my.earned_amount <= 0 %}text-slate-400{% endif %}">
+                ₹{{ "%.0f" | format(my.earned_amount) }}
+            </p>
+            {% if my.earned_tier %}
+            <p class="text-xs mt-1 {% if my.earned_amount > 0 %}text-indigo-200{% else %}text-slate-500{% endif %}">
+                🏅 {{ my.earned_tier.tier_label }} tier unlocked
+            </p>
+            {% else %}
+            <p class="text-xs mt-1 text-slate-400">No tier unlocked yet</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tiers progress bar -->
+    {% if tiers %}
+    <div class="px-6 py-4 border-b border-slate-100">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Incentive Tiers</p>
+        <div class="flex flex-wrap gap-3">
+            {% for tier in tiers %}
+            {% set unlocked = my.overall_pct >= tier.threshold_percent %}
+            <div class="flex items-center gap-2 rounded-xl px-4 py-2.5 border text-sm font-bold transition
+                {% if unlocked %}bg-indigo-600 border-indigo-600 text-white shadow-md
+                {% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %}">
+                {% if unlocked %}✅{% else %}🔒{% endif %}
+                <span>{{ tier.tier_label }}</span>
+                <span class="opacity-60 font-normal">·</span>
+                <span>≥{{ tier.threshold_percent }}%</span>
+                <span class="opacity-60 font-normal">→</span>
+                <span>₹{{ "%.0f" | format(tier.incentive_amount) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- What do I need next? -->
+        {% set next_tier = namespace(found=None) %}
+        {% for tier in tiers %}
+            {% if not next_tier.found and my.overall_pct < tier.threshold_percent %}
+                {% set next_tier.found = tier %}
+            {% endif %}
+        {% endfor %}
+        {% if next_tier.found %}
+        <p class="text-xs text-slate-500 mt-3">
+            💡 You need <strong class="text-indigo-600">{{ (next_tier.found.threshold_percent - my.overall_pct) | round(1) }}% more progress</strong>
+            to unlock <strong>{{ next_tier.found.tier_label }}</strong> (₹{{ "%.0f" | format(next_tier.found.incentive_amount) }}).
+        </p>
+        {% elif my.overall_pct >= 100 %}
+        <p class="text-xs text-emerald-600 font-bold mt-3">🎉 You've hit 100%! All tiers unlocked.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Peer comparison table -->
+    <div class="p-6">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Team Comparison</p>
+        <div class="space-y-3">
+            {% for peer in peers %}
+            <div class="flex items-center gap-3 {% if peer.is_me %}bg-indigo-50 rounded-xl p-3 -mx-1{% endif %}">
+                <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold
+                    {% if loop.index == 1 %}bg-yellow-100 text-yellow-700
+                    {% elif loop.index == 2 %}bg-slate-200 text-slate-600
+                    {% elif loop.index == 3 %}bg-amber-100 text-amber-700
+                    {% else %}bg-slate-100 text-slate-500{% endif %}">
+                    {{ loop.index }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <p class="text-sm font-bold text-slate-800 truncate">
+                            {{ peer.name }}
+                            {% if peer.is_me %}<span class="text-xs text-indigo-500 font-semibold">(you)</span>{% endif %}
+                        </p>
+                        <span class="flex-shrink-0 text-xs text-slate-500 ml-auto">{{ peer.overall_pct }}%</span>
+                        {% if peer.earned_amount > 0 %}
+                        <span class="flex-shrink-0 text-xs font-bold text-emerald-600">₹{{ "%.0f" | format(peer.earned_amount) }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2">
+                        <div class="h-2 rounded-full transition-all
+                            {% if peer.is_me %}bg-indigo-500{% else %}bg-slate-400{% endif %}"
+                            style="width: {{ [peer.overall_pct, 100] | min }}%"></div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-sm text-slate-400 italic">No peers to compare yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% else %}
+<div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-16 text-center">
+    <p class="text-4xl mb-3">🎯</p>
+    <p class="text-slate-600 font-semibold text-lg">No incentive targets set yet</p>
+    <p class="text-slate-400 text-sm mt-1">
+        {% if session.role == 'super_admin' %}
+        <a href="{{ url_for('incentive_targets') }}" class="text-indigo-600 font-bold hover:underline">Create a target</a> to get started.
+        {% else %}
+        Ask your admin to set up incentive targets for the team.
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+
+{% endblock %}

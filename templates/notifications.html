@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">🔔 Notifications</h1>
+      <p class="text-slate-500 text-sm mt-0.5">All recent activity for your account</p>
+    </div>
+    {% if notifications %}
+    <form method="POST" action="{{ url_for('clear_all_notifications') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit"
+              class="text-xs font-bold text-red-500 border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition">
+        🗑 Clear read
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if notifications %}
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden divide-y divide-slate-50">
+    {% set type_icons = {
+        'new_lead': '👤', 'lead_assigned': '📋', 'followup_due': '📅',
+        'followup_overdue': '⚠️', 'portal_upload': '📎',
+        'escalation': '🚨', 'lead_stale': '⏰'
+    } %}
+    {% for n in notifications %}
+    <div class="flex gap-4 px-5 py-4 {% if not n.is_read %}bg-indigo-50/40{% else %}hover:bg-slate-50{% endif %} transition">
+      <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-lg
+                  {% if not n.is_read %}bg-indigo-100{% else %}bg-slate-100{% endif %}">
+        {{ type_icons.get(n.type, '🔔') }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-sm font-bold text-slate-900">{{ n.title }}</p>
+          {% if not n.is_read %}
+          <span class="flex-shrink-0 w-2 h-2 rounded-full bg-indigo-500 mt-1.5"></span>
+          {% endif %}
+        </div>
+        <p class="text-sm text-slate-600 mt-0.5">{{ n.body }}</p>
+        <div class="flex items-center gap-3 mt-1.5">
+          <p class="text-xs text-slate-400">{{ n.created_at.strftime('%d %b %Y, %I:%M %p') if n.created_at else '' }}</p>
+          {% if n.lead_id %}
+          <a href="{{ url_for('view_lead', lead_id=n.lead_id) }}"
+             class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition">View Lead →</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-16 text-center">
+    <p class="text-4xl mb-3">🎉</p>
+    <p class="text-slate-600 font-semibold text-lg">You're all caught up!</p>
+    <p class="text-slate-400 text-sm mt-1">No notifications yet. They'll appear here as activity happens.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Edit User{% endblock %}
+{% block content %}
+<div class="min-h-[calc(100vh-100px)] flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl">
+        <div class="mb-6">
+            <a href="{{ url_for('users_list') }}" class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                &larr; <span>Back to Users</span>
+            </a>
+        </div>
+        
+        <h1 class="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-center text-slate-950 tracking-tight">Edit User</h1>
+        
+        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-100">
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Name</label>
+                    <input type="text" name="name" value="{{ user.name }}" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm" placeholder="Full Name">
+                </div>
+                
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Email</label>
+                    <input type="email" name="email" value="{{ user.email }}" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm" placeholder="email@example.com">
+                </div>
+                
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">New Password</label>
+                    <input type="password" name="new_password" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm" placeholder="Leave blank to keep current password">
+                    <p class="text-xs text-slate-500 mt-1">Only fill if you want to change the password</p>
+                </div>
+                
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Role</label>
+                    <select name="role" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm bg-white">
+                        <option value="user" {% if user.role == 'user' %}selected{% endif %}>User (Counsellor/Telecaller)</option>
+                        <option value="super_admin" {% if user.role == 'super_admin' %}selected{% endif %}>Super Admin</option>
+                    </select>
+                </div>
+                
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                    <h3 class="font-semibold text-yellow-800 mb-2">⚠️ Important Notes:</h3>
+                    <ul class="text-sm text-yellow-700 space-y-1">
+                        <li>• Changing role to Super Admin gives full access to all features</li>
+                        <li>• Resetting password will log the user out immediately</li>
+                        <li>• User will need to login with the new credentials</li>
+                    </ul>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button type="submit" class="flex-1 bg-slate-950 text-white py-3 rounded-lg font-semibold hover:bg-sky-600 transition text-sm sm:text-base">
+                        Update User
+                    </button>
+                    <a href="{{ url_for('users_list') }}" class="flex-1 bg-gray-200 text-slate-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition text-center text-sm sm:text-base">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

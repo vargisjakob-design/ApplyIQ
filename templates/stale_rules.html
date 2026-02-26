@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Stale Lead Reassignment Rules{% endblock %}
+{% block content %}
+
+<div class="mb-6">
+  <a href="{{ url_for('stale_leads') }}" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">
+    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    Back to Stale Leads
+  </a>
+</div>
+
+<div class="max-w-2xl">
+  <h1 class="text-2xl font-bold text-slate-900 mb-1">⚙️ Stale Lead Auto-Reassignment</h1>
+  <p class="text-slate-500 text-sm mb-8">Set a rule to automatically reassign leads with no activity beyond a threshold to a specific counsellor. An audit log entry is created for every reassignment.</p>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-6">
+    <h2 class="text-base font-bold text-slate-800 mb-6">Current Rule</h2>
+    {% if rule %}
+    <div class="grid grid-cols-2 gap-4 text-sm mb-6">
+      <div class="bg-slate-50 rounded-lg p-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Threshold</p>
+        <p class="text-2xl font-extrabold text-slate-800">{{ rule.days_threshold }} days</p>
+      </div>
+      <div class="bg-slate-50 rounded-lg p-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Reassign To</p>
+        <p class="text-base font-bold text-slate-800">{{ rule.reassign_user_name or '— not set —' }}</p>
+      </div>
+      <div class="bg-slate-50 rounded-lg p-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</p>
+        {% if rule.enabled %}
+          <span class="inline-flex items-center gap-1.5 text-green-700 font-bold text-sm"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Enabled</span>
+        {% else %}
+          <span class="inline-flex items-center gap-1.5 text-slate-500 font-bold text-sm"><span class="w-2 h-2 rounded-full bg-slate-400 inline-block"></span> Disabled</span>
+        {% endif %}
+      </div>
+      <div class="bg-slate-50 rounded-lg p-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Created</p>
+        <p class="text-sm font-medium text-slate-700">{{ rule.created_at|ddmmyyyy if rule.created_at else '—' }}</p>
+      </div>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="action" value="run_now">
+      <button type="submit" class="bg-orange-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-orange-600 transition">
+        ▶ Apply Rule Now
+      </button>
+    </form>
+    {% else %}
+    <p class="text-slate-400 italic text-sm">No rule configured yet. Create one below.</p>
+    {% endif %}
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+    <h2 class="text-base font-bold text-slate-800 mb-6">Configure Rule</h2>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="action" value="save_rule">
+      <div class="space-y-5">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Days Without Activity (threshold)</label>
+          <input type="number" name="days_threshold" min="1" max="365"
+                 value="{{ rule.days_threshold if rule else 14 }}"
+                 class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100">
+          <p class="text-xs text-slate-400 mt-1">Leads with no interaction for this many days will be reassigned.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Auto-Reassign To</label>
+          <select name="auto_reassign_to_user_id"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:border-indigo-400 bg-white">
+            <option value="">— Select a counsellor —</option>
+            {% for user in users %}
+            <option value="{{ user.id }}" {% if rule and rule.auto_reassign_to_user_id == user.id %}selected{% endif %}>
+              {{ user.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="flex items-center gap-3">
+          <input type="checkbox" name="enabled" id="enabledCheck" class="w-5 h-5 rounded accent-indigo-600"
+                 {% if not rule or rule.enabled %}checked{% endif %}>
+          <label for="enabledCheck" class="text-sm font-semibold text-slate-700">Enable this rule</label>
+        </div>
+        <div class="pt-2">
+          <button type="submit" class="bg-indigo-600 text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-indigo-700 transition">
+            Save Rule
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Add Lead
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-2 sm:px-0">
+    <h1 class="text-2xl sm:text-3xl font-bold mb-6 text-slate-900">Add New Lead</h1>
+    
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-8">
+        <form method="POST" class="space-y-8">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div>
+                <h3 class="text-lg sm:text-xl font-bold mb-5 text-slate-900 border-b border-slate-100 pb-3">Basic Information</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Name *</label>
+                        <input type="text" name="name" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Phone *</label>
+                        <input type="text" name="phone" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">WhatsApp</label>
+                        <input type="text" name="whatsapp" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Email</label>
+                        <input type="email" name="email" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Age</label>
+                        <input type="number" name="age" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Highest Qualification</label>
+                        <select name="highest_qualification" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                            <option value="" disabled selected>Select qualification</option>
+                            <option value="10th">10th</option>
+                            <option value="12th">12th</option>
+                            <option value="Graduate">Graduate</option>
+                            <option value="Postgraduate">Postgraduate</option>
+                            <option value="PhD">PhD</option>
+                            <option value="3-Year Diploma">3-Year Diploma</option>
+                            <option value="2-Year Diploma">2-Year Diploma</option>
+                            <option value="1-Year Diploma after 12th">1-Year Diploma after 12th</option>
+                            <option value="2-Year Diploma after 12th">2-Year Diploma after 12th</option>
+                            <option value="1-Year Certification after 10th">1-Year Certification after 10th</option>
+                            <option value="2-Year Certification after 10th">2-Year Certification after 10th</option>
+                            <option value="3-Year Diploma after 10th">3-Year Diploma after 10th</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-lg sm:text-xl font-bold mb-5 text-slate-900 border-b border-slate-100 pb-3">Preferences & Source</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Location (City, State)</label>
+                        <input type="text" name="location" placeholder="e.g., Mumbai, Maharashtra" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Country Preference</label>
+                        <select name="country_preference" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                            <option value="">Select Country</option>
+                                <option value="USA">USA</option>
+                                <option value="UK">UK</option>
+                                <option value="Australia">Australia</option>
+                                <option value="New Zealand">New Zealand</option>
+                                <option value="Canada">Canada</option>
+                                <option value="Germany">Germany</option>
+                                <option value="France">France</option>
+                                <option value="UAE">UAE</option>
+                                <option value="Spain">Spain</option>
+                                <option value="Belgium">Belgium</option>
+                                <option value="Russia">Russia</option>
+                                <option value="Finland">Finland</option>
+                                <option value="Netherlands">Netherlands</option>
+                                <option value="Ireland">Ireland</option>
+                                <option value="Italy">Italy</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="China">China</option>
+                                <option value="Vietnam">Vietnam</option>
+                                <option value="Japan">Japan</option>
+                                <option value="South Korea">South Korea</option>
+                                <option value="Philippines">Philippines</option>
+                                <option value="Armenia">Armenia</option>
+                                <option value="Kazakhstan">Kazakhstan</option>
+                                <option value="Azerbaijan">Azerbaijan</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Latvia">Latvia</option>
+                                <option value="Egypt">Egypt</option>
+                                <option value="Israel">Israel</option>
+                                <option value="Uzbekistan">Uzbekistan</option>
+                                <option value="Bulgaria">Bulgaria</option>
+                                <option value="Czech Republic">Czech Republic</option>
+                                <option value="Romania">Romania</option>
+                                <option value="Moldova">Moldova</option>
+                                <option value="Portugal">Portugal</option>
+                                <option value="Austria">Austria</option>
+                                <option value="Hungary">Hungary</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Course Type</label>
+                        <select name="course_type" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                            <option value="">Select Course Type</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Medicine">Medicine</option>
+                            <option value="Nursing">Nursing</option>
+                            <option value="Ausbildung">Ausbildung</option>
+                            <option value="IT">IT</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Arts">Arts</option>
+                            <option value="Humanities">Humanities</option>
+                            <option value="Management">Management</option>
+                            <option value="Business Studies">Business Studies</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Law">Law</option>
+                            <option value="Paralegal">Paralegal</option>
+                            <option value="Design">Design</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Veterinary">Veterinary</option>
+                            <option value="Research">Research</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Course Level</label>
+                        <select name="course_level" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                            <option value="">Select Level</option>
+                            <option value="Graduate">Graduate</option>
+                            <option value="Post Graduate">Post Graduate</option>
+                            <option value="PhD">PhD</option>
+                            <option value="3-year Diploma">3-year Diploma</option>
+                            <option value="2-year Diploma">2-year Diploma</option>
+                            <option value="1-year Certification">1-year Certification</option>
+                            <option value="Research Fellow">Research Fellow</option>
+                        </select>
+                    </div>
+
+                    <!-- Course Selection -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 font-semibold mb-2">Course (Optional)</label>
+                        <select name="course_id" id="courseSelect" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Course</option>
+                            {% for course in all_courses %}
+                            <option value="{{ course.id }}" data-fee="{{ course.course_fee }}">
+                                {{ course.course_name }} - ₹{{ "%.0f"|format(course.course_fee) }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Selecting a course will auto-fill lead value</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Lead Source</label>
+                        <select name="lead_source" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                            <option value="">Select Lead Source</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="Google">Google</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="Student Referral">Student Referral</option>
+                            <option value="Employee Referral">Employee Referral</option>
+                            <option value="Direct Walk-in">Direct Walk-in</option>
+                            <option value="Direct Call">Direct Call</option>
+                            <option value="Webinar">Webinar</option>
+                            <option value="Seminar">Seminar</option>
+                            <option value="Newspaper">Newspaper</option>
+                            <option value="Website">Website</option>
+                            <option value="Event Data">Event Data</option>
+                            <option value="Fair Stall Data">Fair Stall Data</option>
+                            <option value="Purchased Bulk Data">Purchased Bulk Data</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="Email Campaign">Email Campaign</option>
+                            <option value="Partner">Partner</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-lg sm:text-xl font-bold mb-5 text-slate-900 border-b border-slate-100 pb-3">Financial Information</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Lead Value (₹)</label>
+                        <input type="number" step="0.01" name="lead_value" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Registration Amount (₹)</label>
+                        <input type="number" step="0.01" name="registration_amount" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col-reverse sm:flex-row gap-3 pt-5">
+                <a href="{{ url_for('leads_list') }}" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-lg font-semibold hover:bg-slate-200 text-center text-sm transition">
+                    Cancel
+                </a>
+                <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 text-sm transition">
+                    Create Lead
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+(function() {
+    var sel = document.getElementById('courseSelect');
+    var feeInput = document.querySelector('input[name="lead_value"]');
+    if (!sel || !feeInput) return;
+    function applyFee(opt) {
+        var fee = opt ? opt.getAttribute('data-fee') : null;
+        if (fee && parseFloat(fee) > 0) {
+            feeInput.value = parseFloat(fee).toFixed(2);
+        }
+    }
+    sel.addEventListener('change', function() {
+        applyFee(this.options[this.selectedIndex]);
+    });
+    // On edit/view pages: pre-fill if lead_value is blank/zero and a course is already selected
+    var initial = sel.options[sel.selectedIndex];
+    var v = feeInput.value;
+    if (initial && initial.value && (v === '' || v === '0' || v === '0.00' || parseFloat(v) === 0)) {
+        applyFee(initial);
+    }
+})();
+</script>
+
+{% endblock %}

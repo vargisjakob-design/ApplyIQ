@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Report{% endblock %}
+
+{% block content %}
+<div class="max-w-[1600px] mx-auto p-4 sm:p-6">
+    <div class="mb-6">
+        <a href="{{ url_for('reports') }}" class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+            &larr; <span class="hidden sm:inline">Back to Reports</span>
+        </a>
+    </div>
+
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4 text-slate-900">Multi-Dimension Analytics</h1>
+    <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-6">
+        <p class="text-blue-800 text-sm sm:text-base"><strong>Report Period:</strong> {{ date_range_display }}</p>
+        <p class="text-blue-800 text-sm sm:text-base mt-1"><strong>Analyzing By:</strong> {{ dimension_label }}</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-4 sm:p-6 mb-6">
+        <h2 class="text-lg sm:text-xl font-bold mb-4 text-slate-900">Select Analysis Dimension & Period</h2>
+        <form method="GET" class="space-y-4">
+            <div>
+                <label class="block text-slate-700 font-semibold mb-2 text-sm sm:text-base">Analyze By:</label>
+                <select name="dimension" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
+                    <option value="lead_source" {% if dimension == 'lead_source' %}selected{% endif %}>Lead Source</option>
+                    <option value="country_preference" {% if dimension == 'country_preference' %}selected{% endif %}>Country</option>
+                    <option value="course_type" {% if dimension == 'course_type' %}selected{% endif %}>Course Type</option>
+                    <option value="course_level" {% if dimension == 'course_level' %}selected{% endif %}>Course Level</option>
+                    <option value="location" {% if dimension == 'location' %}selected{% endif %}>Location</option>
+                    <option value="age" {% if dimension == 'age' %}selected{% endif %}>Age Group</option>
+                    <option value="course_name" {% if dimension == 'course_name' %}selected{% endif %}>Course Name</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-slate-700 font-semibold mb-2 text-sm sm:text-base">Time Period:</label>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                    <button type="submit" name="period" value="daily" class="px-4 py-2 text-sm sm:text-base {% if period == 'daily' %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200{% endif %} rounded-lg font-medium transition">
+                        Daily
+                    </button>
+                    <button type="submit" name="period" value="weekly" class="px-4 py-2 text-sm sm:text-base {% if period == 'weekly' %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200{% endif %} rounded-lg font-medium transition">
+                        Weekly
+                    </button>
+                    <button type="submit" name="period" value="monthly" class="px-4 py-2 text-sm sm:text-base {% if period == 'monthly' or not period %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200{% endif %} rounded-lg font-medium transition">
+                        Monthly
+                    </button>
+                    <button type="submit" name="period" value="yearly" class="px-4 py-2 text-sm sm:text-base {% if period == 'yearly' %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200{% endif %} rounded-lg font-medium transition">
+                        Yearly
+                    </button>
+                    <button type="button"
+                        hx-get="/modal/custom-date?dimension={{ dimension }}"
+                        hx-target="#modal-container"
+                        hx-swap="innerHTML"
+                        class="px-4 py-2 text-sm sm:text-base col-span-2 sm:col-span-1 {% if period == 'custom' %}bg-blue-600 text-white{% else %}bg-slate-100 hover:bg-slate-200{% endif %} rounded-lg font-medium transition">
+                        Custom
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden mb-8">
+        <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-5 py-4">
+            <h2 class="text-lg sm:text-xl font-bold">📊 {{ dimension_label }} Performance</h2>
+            <p class="text-xs sm:text-sm text-purple-100">Ranked by conversion rate</p>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">Rank</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-700">{{ dimension_label }}</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-700">Leads</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-700">Contacted</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-700">Interested</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-700">Won</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-700">Conv %</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-700">Hot</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-700">Revenue</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-700">Score</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for stat in dimension_stats %}
+                    <tr class="{% if loop.index <= 3 %}bg-purple-50/50{% else %}hover:bg-slate-50{% endif %}">
+                        <td class="px-4 py-4 font-bold text-base">
+                            {% if loop.index == 1 %}
+                                <span class="text-purple-600">🥇 1</span>
+                            {% elif loop.index == 2 %}
+                                <span class="text-blue-600">🥈 2</span>
+                            {% elif loop.index == 3 %}
+                                <span class="text-orange-600">🥉 3</span>
+                            {% else %}
+                                <span class="text-slate-600">{{ loop.index }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-4 font-semibold text-slate-900">{{ stat.value }}</td>
+                        <td class="px-4 py-4 text-center font-bold text-slate-900">{{ stat.total_leads }}</td>
+                        <td class="px-4 py-4 text-center text-slate-700">
+                            {{ stat.contacted_leads }}
+                            <p class="text-xs text-slate-500">{{ "%.0f"|format(stat.contact_rate) }}%</p>
+                        </td>
+                        <td class="px-4 py-4 text-center text-blue-700 font-medium">{{ stat.interested_leads }}</td>
+                        <td class="px-4 py-4 text-center font-bold text-green-700">{{ stat.won_leads }}</td>
+                        <td class="px-4 py-4 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold {% if stat.conversion_rate >= 20 %}bg-green-100 text-green-800{% elif stat.conversion_rate >= 10 %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ "%.1f"|format(stat.conversion_rate) }}%
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 text-center text-red-600 font-bold">{{ stat.hot_leads }}</td>
+                        <td class="px-4 py-4 text-center font-bold text-slate-900">₹{{ "%.0f"|format(stat.total_revenue) }}</td>
+                        <td class="px-4 py-4 text-center">
+                            <span class="px-2 py-0.5 rounded text-xs font-medium {% if stat.avg_score >= 60 %}bg-green-100 text-green-800{% elif stat.avg_score >= 40 %}bg-yellow-100 text-yellow-800{% else %}bg-slate-100 text-slate-700{% endif %}">
+                                {{ "%.0f"|format(stat.avg_score) }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="px-4 py-8 text-center text-slate-500">No data available for this dimension and period</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if dimension_stats %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <h3 class="text-sm font-semibold mb-3 text-purple-700 uppercase tracking-wider">🏆 Best Performer</h3>
+            <p class="text-2xl font-bold mb-1 text-slate-900">{{ dimension_stats[0].value }}</p>
+            <p class="text-slate-600 text-sm">{{ "%.1f"|format(dimension_stats[0].conversion_rate) }}% conversion</p>
+            <p class="text-xs text-slate-500 mt-3 bg-slate-50 p-2 rounded">{{ dimension_stats[0].won_leads }} won / {{ dimension_stats[0].total_leads }} leads</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6">
+            <h3 class="text-sm font-semibold mb-3 text-blue-700 uppercase tracking-wider">💰 Highest Revenue</h3>
+            {% set revenue_sorted = dimension_stats|sort(attribute='total_revenue', reverse=True) %}
+            <p class="text-2xl font-bold mb-1 text-slate-900">{{ revenue_sorted[0].value }}</p>
+            <p class="text-slate-600 text-sm">₹{{ "%.0f"|format(revenue_sorted[0].total_revenue) }}</p>
+            <p class="text-xs text-slate-500 mt-3 bg-slate-50 p-2 rounded">{{ revenue_sorted[0].total_leads }} leads</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-6 sm:col-span-2 lg:col-span-1">
+            <h3 class="text-sm font-semibold mb-3 text-green-700 uppercase tracking-wider">📈 Highest Volume</h3>
+            {% set volume_sorted = dimension_stats|sort(attribute='total_leads', reverse=True) %}
+            <p class="text-2xl font-bold mb-1 text-slate-900">{{ volume_sorted[0].value }}</p>
+            <p class="text-slate-600 text-sm">{{ volume_sorted[0].total_leads }} leads</p>
+            <p class="text-xs text-slate-500 mt-3 bg-slate-50 p-2 rounded">{{ "%.1f"|format(volume_sorted[0].conversion_rate) }}% conversion</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div id="modal-container"></div>
+</div>
+
+{% endblock %}

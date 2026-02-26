@@ -1,0 +1,184 @@
+<!-- Current stage badge (inside swap target so always stays in sync) -->
+<div class="pipe-current">
+  <span class="pipe-dot"></span>
+  <span style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Current stage:</span>
+  <span style="font-size:13px;font-weight:800;color:#1e293b;">{{ lead.lead_status }}</span>
+</div>
+
+<!-- Pipeline flow -->
+<div class="pipeline-wrapper">
+  <div class="pipeline-flow">
+
+    <!-- 1. Not Yet Contacted -->
+    <button class="ps-step ps-1 {% if lead.lead_status == 'Not Yet Contacted' %}ps-active{% elif lead.lead_status not in ['Not Yet Contacted'] %}ps-done{% endif %}"
+            hx-post="/leads/{{ lead.id }}/update-status"
+            hx-vals='{"status": "Not Yet Contacted", "csrf_token": "{{ csrf_token }}"}'
+            hx-target="#status-buttons" hx-trigger="click" hx-swap="innerHTML">
+      <span class="ps-icon">📋</span>
+      <span class="ps-label">Not Yet<br>Contacted</span>
+    </button>
+
+    <!-- 2. Contacted -->
+    <button class="ps-step ps-2 {% if lead.lead_status == 'Contacted' %}ps-active{% endif %}"
+            hx-post="/leads/{{ lead.id }}/update-status"
+            hx-vals='{"status": "Contacted", "csrf_token": "{{ csrf_token }}"}'
+            hx-target="#status-buttons" hx-trigger="click" hx-swap="innerHTML">
+      <span class="ps-icon">📞</span>
+      <span class="ps-label">Contacted</span>
+    </button>
+
+    <!-- 3. Interested -->
+    <button class="ps-step ps-3 {% if lead.lead_status == 'Interested' %}ps-active{% endif %}"
+            hx-post="/leads/{{ lead.id }}/update-status"
+            hx-vals='{"status": "Interested", "csrf_token": "{{ csrf_token }}"}'
+            hx-target="#status-buttons" hx-trigger="click" hx-swap="innerHTML">
+      <span class="ps-icon">⭐</span>
+      <span class="ps-label">Interested</span>
+    </button>
+
+    <!-- 4. Not Interested — triggers reason capture -->
+    <button class="ps-step ps-4 {% if lead.lead_status == 'Not Interested' %}ps-active{% endif %}"
+            onclick="showClosedReasonForm('Not Interested')" type="button">
+      <span class="ps-icon">👎</span>
+      <span class="ps-label">Not<br>Interested</span>
+    </button>
+
+    <!-- 5. Follow-up -->
+    <button class="ps-step ps-5 {% if lead.lead_status == 'Follow-up' %}ps-active{% endif %}"
+            hx-post="/leads/{{ lead.id }}/update-status"
+            hx-vals='{"status": "Follow-up", "csrf_token": "{{ csrf_token }}"}'
+            hx-target="#status-buttons" hx-trigger="click" hx-swap="innerHTML">
+      <span class="ps-icon">🔄</span>
+      <span class="ps-label">Follow-up</span>
+    </button>
+
+    <!-- 6. Follow-up Scheduled -->
+    <button class="ps-step ps-6 {% if lead.lead_status == 'Follow-up Scheduled' %}ps-active{% endif %}"
+            hx-post="/leads/{{ lead.id }}/update-status"
+            hx-vals='{"status": "Follow-up Scheduled", "csrf_token": "{{ csrf_token }}"}'
+            hx-target="#status-buttons" hx-trigger="click" hx-swap="innerHTML">
+      <span class="ps-icon">📅</span>
+      <span class="ps-label">F/U<br>Scheduled</span>
+    </button>
+
+    <!-- 7. On-Hold -->
+    <button class="ps-step ps-7 {% if lead.lead_status == 'On-Hold' %}ps-active{% endif %}"
+            hx-post="/leads/{{ lead.id }}/update-status"
+            hx-vals='{"status": "On-Hold", "csrf_token": "{{ csrf_token }}"}'
+            hx-target="#status-buttons" hx-trigger="click" hx-swap="innerHTML">
+      <span class="ps-icon">⏸️</span>
+      <span class="ps-label">On-Hold</span>
+    </button>
+
+    <!-- 8. Registered -->
+    <button class="ps-step ps-8 {% if lead.lead_status == 'Registered' %}ps-active{% endif %}"
+            hx-post="/leads/{{ lead.id }}/update-status"
+            hx-vals='{"status": "Registered", "csrf_token": "{{ csrf_token }}"}'
+            hx-target="#status-buttons" hx-trigger="click" hx-swap="innerHTML">
+      <span class="ps-icon">✍️</span>
+      <span class="ps-label">Registered</span>
+    </button>
+
+    <!-- 9. Won -->
+    <button class="ps-step ps-9 {% if lead.lead_status == 'Closed - Won' %}ps-active{% endif %}"
+            hx-post="/leads/{{ lead.id }}/update-status"
+            hx-vals='{"status": "Closed - Won", "csrf_token": "{{ csrf_token }}"}'
+            hx-target="#status-buttons" hx-trigger="click" hx-swap="innerHTML">
+      <span class="ps-icon">🏆</span>
+      <span class="ps-label">Won</span>
+    </button>
+
+    <!-- 10. Lost — triggers reason capture -->
+    <button class="ps-step ps-10 {% if lead.lead_status == 'Closed - Lost' %}ps-active{% endif %}"
+            onclick="showClosedReasonForm('Closed - Lost')" type="button">
+      <span class="ps-icon">✖️</span>
+      <span class="ps-label">Lost</span>
+    </button>
+
+  </div>
+
+  <!-- Mobile snake bend connector (only visible on mobile via CSS) -->
+  <div class="pipeline-snake-bend" aria-hidden="true">
+    <!-- Top half: downward line -->
+    <svg viewBox="0 0 16 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="8" y1="0" x2="8" y2="38" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+      <polyline points="2,32 8,38 14,32" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+</div>
+
+<!-- ── TIER 1-C: Closed Reason Capture Form (inline, shown via JS) ── -->
+<div id="closedReasonForm" style="display:none; margin-top:20px; padding:20px; background:#fff1f0; border:2px solid #fca5a5; border-radius:16px;">
+  <p style="font-size:13px; font-weight:800; color:#991b1b; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 4px;">🔴 Capture Closure Reason</p>
+  <p style="font-size:13px; color:#b91c1c; margin:0 0 16px;">Understanding why leads are lost helps improve your conversion rate. Please capture the reason before closing.</p>
+  <input type="hidden" id="closedStatusValue" value="">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+    <div>
+      <label style="display:block; font-size:11px; font-weight:700; color:#991b1b; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px;">Primary Reason *</label>
+      <select id="closedReasonSelect" style="width:100%; padding:10px 14px; border:1.5px solid #fca5a5; border-radius:12px; font-size:14px; background:#fff; color:#0f172a; outline:none; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer;">
+        <option value="">Select a reason…</option>
+        <option value="Chose Competitor">Chose a competitor agency</option>
+        <option value="Fee Too High">Fee / course cost too high</option>
+        <option value="Visa Concern">Visa refusal concern</option>
+        <option value="Not Eligible">Not academically eligible</option>
+        <option value="No Response">Stopped responding (ghosted)</option>
+        <option value="Changed Plans">Changed study plans / deferred</option>
+        <option value="Financial Constraints">Financial constraints</option>
+        <option value="Family Decision">Family decided against it</option>
+        <option value="Chose Different Country">Chose a different country</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div>
+      <label style="display:block; font-size:11px; font-weight:700; color:#991b1b; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px;">Additional Details (optional)</label>
+      <input type="text" id="closedReasonDetail" placeholder="e.g. Student chose XYZ agency as they offered visa support"
+             style="width:100%; padding:10px 14px; border:1.5px solid #fca5a5; border-radius:12px; font-size:14px; background:#fff; color:#0f172a; outline:none; box-sizing:border-box; font-family:'Plus Jakarta Sans',sans-serif;">
+    </div>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button onclick="submitClosedStatus()" type="button"
+            style="background:#dc2626; color:#fff; border:none; padding:10px 22px; border-radius:12px; font-size:14px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; transition:background 0.15s;"
+            onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">
+      Confirm &amp; Close Lead
+    </button>
+    <button onclick="hideClosedReasonForm()" type="button"
+            style="background:#f1f5f9; color:#475569; border:1.5px solid #e2e8f0; padding:10px 22px; border-radius:12px; font-size:14px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; transition:background 0.15s;"
+            onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<script>
+function showClosedReasonForm(status) {
+  document.getElementById('closedStatusValue').value = status;
+  document.getElementById('closedReasonForm').style.display = 'block';
+  document.getElementById('closedReasonForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function hideClosedReasonForm() {
+  document.getElementById('closedReasonForm').style.display = 'none';
+}
+function submitClosedStatus() {
+  var status = document.getElementById('closedStatusValue').value;
+  var reason = document.getElementById('closedReasonSelect').value;
+  var detail = document.getElementById('closedReasonDetail').value;
+  if (!reason) {
+    alert('Please select a primary reason before closing this lead.');
+    return;
+  }
+  // Use HTMX programmatic request
+  htmx.ajax('POST', '/leads/{{ lead.id }}/update-status', {
+    target: '#status-buttons',
+    swap: 'innerHTML',
+    values: {
+      status: status,
+      closed_reason: reason,
+      closed_reason_detail: detail,
+      csrf_token: '{{ csrf_token }}'
+    }
+  });
+  hideClosedReasonForm();
+  // Reload page after short delay so closed_reason displays in Study Plans card
+  setTimeout(function() { window.location.reload(); }, 800);
+}
+</script>

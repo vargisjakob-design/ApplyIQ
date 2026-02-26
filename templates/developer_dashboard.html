@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <nav class="bg-gray-800 text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-3">
+                <div class="text-lg md:text-xl font-bold">Dev Dashboard</div>
+                
+                <div class="hidden md:flex items-center gap-4 text-sm">
+                    <a href="{{ url_for('developer_dashboard') }}" class="hover:text-gray-300">Companies</a>
+                    <a href="{{ url_for('developer_change_password') }}" class="hover:text-gray-300">Change Password</a>
+                    <a href="{{ url_for('developer_logout') }}" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm">Logout</a>
+                </div>
+                
+                <input type="checkbox" id="mobile-menu-toggle" class="hidden">
+                <label for="mobile-menu-toggle" class="md:hidden p-2 rounded hover:bg-gray-700 cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </label>
+            </div>
+            
+            <div id="mobileMenu" class="hidden md:hidden pb-4 space-y-2 text-sm border-t border-gray-700 pt-3">
+            <style>
+                #mobile-menu-toggle:checked ~ #mobileMenu {
+                    display: block !important;
+                }
+            </style>
+                <a href="{{ url_for('developer_dashboard') }}" class="block py-2 hover:text-gray-300">Companies</a>
+                <a href="{{ url_for('developer_change_password') }}" class="block py-2 hover:text-gray-300">Change Password</a>
+                <a href="{{ url_for('developer_logout') }}" class="block py-2 bg-red-500 hover:bg-red-600 rounded text-center">Logout</a>
+            </div>
+        </div>
+    </nav>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 mt-4">
+                {% for category, message in messages %}
+                    <div class="{% if category == 'error' %}bg-red-100 border-red-400 text-red-700{% elif category == 'success' %}bg-green-100 border-green-400 text-green-700{% else %}bg-yellow-100 border-yellow-400 text-yellow-700{% endif %} border px-4 py-3 rounded mb-4 text-sm break-all">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <h1 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-gray-900">Company Management</h1>
+        
+        <div class="bg-white rounded-lg shadow overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Company Name</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Code</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Status</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Sub Start</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Sub End</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Created</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for company in companies %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-4 whitespace-nowrap text-gray-900">{{ company.company_name }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap font-mono text-gray-600">{{ company.company_code }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full {% if company.status == 'ACTIVE' %}bg-green-100 text-green-800{% elif company.status == 'PENDING' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ company.status }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-gray-600">{{ company.subscription_start_date|ddmmyyyy if company.subscription_start_date else 'N/A' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-gray-600">{{ company.subscription_end_date|ddmmyyyy if company.subscription_end_date else 'N/A' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-gray-600">{{ company.created_at|ddmmyyyy if company.created_at else 'N/A' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <div class="flex flex-wrap items-center gap-2">
+
+                                {% if company.status == 'PENDING' %}
+                                    <button
+                                        onclick="openApproveModal({{ company.id }}, '{{ company.company_name }}')"
+                                        class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">
+                                        Approve
+                                    </button>
+
+                                {% elif company.status == 'ACTIVE' %}
+                                    <form method="POST" action="{{ url_for('suspend_company', company_id=company.id) }}" class="inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="bg-yellow-500 text-white px-3 py-1 rounded text-xs hover:bg-yellow-600">
+                                            Suspend
+                                        </button>
+                                    </form>
+                                    <button
+                                        onclick="openExtendModal({{ company.id }}, '{{ company.company_name }}')"
+                                        class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
+                                        Extend
+                                    </button>
+
+                                {% elif company.status == 'SUSPENDED' %}
+                                    <form method="POST" action="{{ url_for('activate_company', company_id=company.id) }}" class="inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">
+                                            Activate
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                <!-- Reset Password — available for ALL company statuses -->
+                                <button
+                                    onclick="openResetModal({{ company.id }}, '{{ company.company_name }}')"
+                                    class="bg-purple-500 text-white px-3 py-1 rounded text-xs hover:bg-purple-600">
+                                    Reset PW
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Approve Modal ─────────────────────────────────────── -->
+    <div id="approveModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl">
+            <h3 class="text-xl font-bold mb-1 text-gray-900">Approve Company</h3>
+            <p id="approveModalCompanyName" class="text-sm text-gray-500 mb-4"></p>
+            <form id="approveForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm mb-2">Subscription Start Date</label>
+                    <input type="date" name="start_date" required class="w-full px-4 py-2 border rounded text-sm">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm mb-2">Subscription End Date</label>
+                    <input type="date" name="end_date" required class="w-full px-4 py-2 border rounded text-sm">
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600 text-sm font-semibold">Approve</button>
+                    <button type="button" onclick="closeModal('approveModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded hover:bg-gray-300 text-sm">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── Extend Modal ──────────────────────────────────────── -->
+    <div id="extendModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl">
+            <h3 class="text-xl font-bold mb-1 text-gray-900">Extend Subscription</h3>
+            <p id="extendModalCompanyName" class="text-sm text-gray-500 mb-4"></p>
+            <form id="extendForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm mb-2">New End Date</label>
+                    <input type="date" name="end_date" required class="w-full px-4 py-2 border rounded text-sm">
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600 text-sm font-semibold">Extend</button>
+                    <button type="button" onclick="closeModal('extendModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded hover:bg-gray-300 text-sm">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── Reset Password Modal ──────────────────────────────── -->
+    <div id="resetModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl">
+            <h3 class="text-xl font-bold mb-1 text-gray-900">Reset Super Admin Password</h3>
+            <p id="resetModalCompanyName" class="text-sm text-gray-500 mb-5"></p>
+
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                <p class="text-xs font-semibold text-purple-800 mb-1">Set a new password directly</p>
+                <p class="text-xs text-purple-600 mb-3">Type a new password and share it with the super admin.</p>
+                <form id="resetPasswordForm" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="password" name="new_password" id="resetNewPw" required minlength="8"
+                           placeholder="New password (min 8 chars)"
+                           class="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <input type="password" name="confirm_password" id="resetConfirmPw" required minlength="8"
+                           placeholder="Confirm new password"
+                           class="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-1 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <p id="resetMatchMsg" class="text-xs mb-3 hidden"></p>
+                    <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded text-sm hover:bg-purple-700 font-semibold">
+                        Set New Password
+                    </button>
+                </form>
+            </div>
+
+            <button type="button" onclick="closeModal('resetModal')"
+                    class="w-full bg-gray-100 text-gray-600 py-2 rounded text-sm hover:bg-gray-200 font-medium">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ── Modal helpers ────────────────────────────────────────
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        ['approveModal', 'extendModal', 'resetModal'].forEach(function(id) {
+            document.getElementById(id).addEventListener('click', function(e) {
+                if (e.target === this) closeModal(id);
+            });
+        });
+
+        // ── Approve ──────────────────────────────────────────────
+        function openApproveModal(companyId, companyName) {
+            document.getElementById('approveModalCompanyName').textContent = 'Company: ' + companyName;
+            document.getElementById('approveForm').action = '/developer/approve/' + companyId;
+            document.getElementById('approveModal').classList.remove('hidden');
+        }
+
+        // ── Extend ───────────────────────────────────────────────
+        function openExtendModal(companyId, companyName) {
+            document.getElementById('extendModalCompanyName').textContent = 'Company: ' + companyName;
+            document.getElementById('extendForm').action = '/developer/extend/' + companyId;
+            document.getElementById('extendModal').classList.remove('hidden');
+        }
+
+        // ── Reset Password ───────────────────────────────────────
+        function openResetModal(companyId, companyName) {
+            document.getElementById('resetModalCompanyName').textContent = 'Company: ' + companyName;
+            document.getElementById('resetPasswordForm').action = '/developer/reset-password/' + companyId;
+            // Clear fields when reopening
+            document.getElementById('resetNewPw').value = '';
+            document.getElementById('resetConfirmPw').value = '';
+            document.getElementById('resetMatchMsg').classList.add('hidden');
+            document.getElementById('resetModal').classList.remove('hidden');
+        }
+
+        // Password match checker in reset modal
+        (function () {
+            var np  = document.getElementById('resetNewPw');
+            var cp  = document.getElementById('resetConfirmPw');
+            var msg = document.getElementById('resetMatchMsg');
+            function check() {
+                if (!cp.value) { msg.classList.add('hidden'); return; }
+                msg.classList.remove('hidden');
+                if (np.value === cp.value) {
+                    msg.textContent = '✓ Passwords match';
+                    msg.className = 'text-xs mb-3 text-green-600';
+                } else {
+                    msg.textContent = '✗ Passwords do not match';
+                    msg.className = 'text-xs mb-3 text-red-600';
+                }
+            }
+            np.addEventListener('input', check);
+            cp.addEventListener('input', check);
+        })();
+    </script>
+
+</body>
+</html>

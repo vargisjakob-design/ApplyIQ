@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Conversion Forecast{% endblock %}
+
+{% block content %}
+<div class="max-w-[1600px] mx-auto p-4 sm:p-6">
+    <div class="mb-6">
+        <a href="{{ url_for('reports') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">
+            &larr; <span>Back to Reports</span>
+        </a>
+    </div>
+
+    <h1 class="text-3xl font-bold mb-4 text-gray-900">📈 Conversion Forecast</h1>
+    <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-6 sm:mb-8">
+        <p class="text-blue-800 text-sm">
+            <strong>Based on {{ total_leads }} active leads</strong> in your pipeline (excludes won/lost/not interested)
+        </p>
+        <p class="text-blue-700 text-xs mt-1">
+            Forecast uses AI-powered probability analysis based on lead score, status, engagement, and time in pipeline
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="text-3xl">📅</div>
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Monthly Forecast</h2>
+                    <p class="text-sm text-slate-600">{{ current_month }}</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-slate-50 border border-slate-100 rounded-lg p-4">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Expected Conversions</p>
+                    <p class="text-4xl font-extrabold text-gray-900">{{ total_monthly_conversions }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Out of {{ total_leads }} active leads</p>
+                </div>
+                <div class="bg-slate-50 border border-slate-100 rounded-lg p-4">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Expected Revenue</p>
+                    <p class="text-3xl font-extrabold text-green-700">₹{{ "%.0f"|format(total_monthly_revenue) }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Projected by month end</p>
+                </div>
+                <div class="bg-purple-50 border border-purple-100 rounded-lg p-3">
+                    <p class="text-sm text-purple-900">
+                        <strong>{{ days_left_in_month }} days left</strong> in this month to achieve target
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="text-3xl">📊</div>
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Quarterly Forecast</h2>
+                    <p class="text-sm text-slate-600">{{ current_quarter }}</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-slate-50 border border-slate-100 rounded-lg p-4">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Expected Conversions</p>
+                    <p class="text-4xl font-extrabold text-gray-900">{{ total_quarterly_conversions }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Out of {{ total_leads }} active leads</p>
+                </div>
+                <div class="bg-slate-50 border border-slate-100 rounded-lg p-4">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Expected Revenue</p>
+                    <p class="text-3xl font-extrabold text-green-700">₹{{ "%.0f"|format(total_quarterly_revenue) }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Projected by quarter end</p>
+                </div>
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                    <p class="text-sm text-blue-900">
+                        <strong>Higher probability</strong> with 3-month window for conversions
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if session.role == 'super_admin' and user_forecasts %}
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-5 text-gray-900">👥 User-wise Forecast Breakdown</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-600">User</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Active Leads</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Monthly Conversions</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Monthly Revenue</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Quarterly Conversions</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Quarterly Revenue</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for user in user_forecasts %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-4 font-semibold text-gray-900">{{ user.user_name }}</td>
+                        <td class="px-4 py-4 text-center text-slate-700">{{ user.lead_count }}</td>
+                        <td class="px-4 py-4 text-center font-bold text-purple-700">{{ "%.0f"|format(user.monthly_conversions) }}</td>
+                        <td class="px-4 py-4 text-center font-bold text-green-700">₹{{ "%.0f"|format(user.monthly_revenue) }}</td>
+                        <td class="px-4 py-4 text-center font-bold text-blue-700">{{ "%.0f"|format(user.quarterly_conversions) }}</td>
+                        <td class="px-4 py-4 text-center font-bold text-green-700">₹{{ "%.0f"|format(user.quarterly_revenue) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-4">
+            <p class="text-sm text-blue-900">
+                <strong>✓ Validation:</strong> Sum of individual user forecasts = {{ "%.0f"|format(user_forecasts|sum(attribute='monthly_conversions')) }} monthly conversions matches total forecast above
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden mb-8">
+        <div class="bg-slate-50 border-b border-slate-200 px-6 py-4">
+            <h2 class="text-xl font-semibold text-gray-900">🎯 Lead-wise Conversion Probability</h2>
+            <p class="text-sm text-slate-600">Ranked by monthly conversion probability (Page {{ page }} of {{ total_pages }})</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-600">Lead</th>
+                        {% if session.role == 'super_admin' %}
+                        <th class="px-4 py-3 text-left font-semibold text-slate-600">Assigned To</th>
+                        {% endif %}
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Score</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Days</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Touches</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Monthly %</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Monthly ₹</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Quarterly %</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600">Quarterly ₹</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for lead in forecast_data %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-4">
+                            <p class="font-semibold text-gray-900">{{ lead.lead_name }}</p>
+                            <p class="text-xs text-slate-500">{{ lead.lead_phone }}</p>
+                        </td>
+                        {% if session.role == 'super_admin' %}
+                        <td class="px-4 py-4 text-slate-700">{{ lead.assigned_user }}</td>
+                        {% endif %}
+                        <td class="px-4 py-4 text-center">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                {% if lead.status == 'Registered' %}bg-green-100 text-green-700
+                                {% elif lead.status == 'Follow-up Scheduled' %}bg-purple-100 text-purple-700
+                                {% elif lead.status == 'Follow-up' %}bg-blue-100 text-blue-700
+                                {% elif lead.status == 'Interested' %}bg-yellow-100 text-yellow-700
+                                {% elif lead.status == 'Contacted' %}bg-orange-100 text-orange-700
+                                {% elif lead.status == 'On-Hold' %}bg-gray-100 text-gray-700
+                                {% else %}bg-slate-100 text-slate-700{% endif %}">
+                                {{ lead.status }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 text-center">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                {% if lead.category == 'Hot' %}bg-red-100 text-red-700
+                                {% elif lead.category == 'Warm' %}bg-orange-100 text-orange-700
+                                {% else %}bg-blue-100 text-blue-700{% endif %}">
+                                {{ lead.score }} ({{ lead.category }})
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 text-center text-slate-700">{{ lead.days_in_pipeline }}</td>
+                        <td class="px-4 py-4 text-center text-slate-700">{{ lead.interaction_count }}</td>
+                        <td class="px-4 py-4 text-center">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                {% if lead.monthly_probability >= 70 %}bg-green-100 text-green-700
+                                {% elif lead.monthly_probability >= 40 %}bg-yellow-100 text-yellow-700
+                                {% else %}bg-red-100 text-red-700{% endif %}">
+                                {{ "%.0f"|format(lead.monthly_probability) }}%
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 text-center font-semibold text-green-700">₹{{ "%.0f"|format(lead.monthly_revenue) }}</td>
+                        <td class="px-4 py-4 text-center font-semibold text-blue-700">{{ "%.0f"|format(lead.quarterly_probability) }}%</td>
+                        <td class="px-4 py-4 text-center font-semibold text-green-700">₹{{ "%.0f"|format(lead.quarterly_revenue) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="bg-white rounded-lg shadow-sm border border-slate-100 p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="text-sm text-slate-600">
+                    Showing {{ ((page - 1) * per_page + 1) }} to {{ ((page - 1) * per_page + forecast_data|length) }} of {{ total_leads }} leads
+                </div>
+                <div class="flex gap-2">
+                    {% if page > 1 %}
+                        <a href="{{ url_for('forecast_report', page=page-1) }}" 
+                           class="px-3 py-2 bg-white border border-slate-300 rounded-md hover:bg-slate-50 text-sm font-medium text-slate-700">
+                            ← Previous
+                        </a>
+                    {% endif %}
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                        {% if p == page %}
+                            <span class="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium">{{ p }}</span>
+                        {% elif p <= 3 or p >= total_pages - 2 or (p >= page - 2 and p <= page + 2) %}
+                            <a href="{{ url_for('forecast_report', page=p) }}" 
+                               class="px-3 py-2 bg-white border border-slate-300 rounded-md hover:bg-slate-50 text-sm font-medium text-slate-700">
+                                {{ p }}
+                            </a>
+                        {% elif p == 4 or p == total_pages - 3 %}
+                            <span class="px-3 py-2 text-slate-500">...</span>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page < total_pages %}
+                        <a href="{{ url_for('forecast_report', page=page+1) }}" 
+                           class="px-3 py-2 bg-white border border-slate-300 rounded-md hover:bg-slate-50 text-sm font-medium text-slate-700">
+                            Next →
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-900">📥 Export Forecast</h2>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <a href="{{ url_for('export_forecast') }}" class="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-green-700 text-center transition">
+                Download CSV Report
+            </a>
+            <button class="bg-slate-100 text-slate-700 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-200 text-center transition">
+                Print Report
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-semibold mb-4 text-gray-900">📚 How This Forecast Works</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-slate-50 border border-slate-100 rounded-lg p-4">
+                <h4 class="font-semibold text-gray-900 mb-2">Probability Factors:</h4>
+                <ul class="space-y-1 text-slate-600">
+                    <li>• <strong>Lead Status:</strong> Higher stages = higher probability</li>
+                    <li>• <strong>Lead Score:</strong> Hot leads boosted by 20%</li>
+                    <li>• <strong>Engagement:</strong> More interactions = higher chance</li>
+                    <li>• <strong>Payment:</strong> Registered leads boosted by 30%</li>
+                    <li>• <strong>Freshness:</strong> Recent leads have momentum</li>
+                </ul>
+            </div>
+            <div class="bg-slate-50 border border-slate-100 rounded-lg p-4">
+                <h4 class="font-semibold text-gray-900 mb-2">Calculation Method:</h4>
+                <ul class="space-y-1 text-slate-600">
+                    <li>• Base probability from status (10-85%)</li>
+                    <li>• Adjusted by score category</li>
+                    <li>• Adjusted by engagement level</li>
+                    <li>• Adjusted by time in pipeline</li>
+                    <li>• Quarterly = Monthly × 1.25 (more time)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

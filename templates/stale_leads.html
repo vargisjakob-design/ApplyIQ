@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}Stale Leads{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">⏰ Stale Leads</h1>
+        <p class="text-slate-500 text-sm mt-1">Leads with no interaction logged in the selected period</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <a href="{{ url_for('leads_list') }}" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg font-semibold hover:bg-slate-200 text-sm transition text-center">
+          ← Back to Leads
+      </a>
+      {% if session.role == 'super_admin' %}
+      <a href="{{ url_for('stale_lead_rules_settings') }}" class="bg-orange-100 text-orange-700 border border-orange-200 px-4 py-2.5 rounded-lg font-semibold hover:bg-orange-200 text-sm transition text-center">
+          ⚙️ Configure Auto-Reassignment
+      </a>
+      {% if total > 0 %}
+      <button type="button" id="bulk-delete-btn"
+              onclick="showBulkDeleteModal()"
+              class="hidden bg-red-100 text-red-700 border border-red-200 px-4 py-2.5 rounded-lg font-semibold hover:bg-red-200 text-sm transition">
+          🗑 Delete Selected (<span id="bulk-del-count">0</span>)
+      </button>
+      {% endif %}
+      {% endif %}
+    </div>
+</div>
+
+<!-- Filter bar -->
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-5 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <span class="text-sm font-semibold text-slate-700">Show leads silent for:</span>
+        <div class="flex gap-2 flex-wrap">
+            {% for d in [3, 7, 14, 30] %}
+            <a href="{{ url_for('stale_leads', days=d) }}"
+               class="px-4 py-2 rounded-lg text-sm font-semibold border transition
+               {% if days == d %}bg-amber-500 text-white border-amber-500{% else %}bg-white text-slate-700 border-slate-300 hover:border-amber-400 hover:text-amber-600{% endif %}">
+                {{ d }} days+
+            </a>
+            {% endfor %}
+        </div>
+        <span class="text-xs text-slate-500 sm:ml-auto">Only active pipeline statuses shown (Closed / Won / Lost / Disqualified excluded)</span>
+    </div>
+</div>
+
+<!-- Summary banner -->
+<div class="{% if total == 0 %}bg-green-50 border-green-200 text-green-800{% elif total > 10 %}bg-red-50 border-red-200 text-red-800{% else %}bg-amber-50 border-amber-200 text-amber-800{% endif %} border rounded-xl px-5 py-4 mb-6 flex items-center gap-3">
+    <span class="text-2xl">{% if total == 0 %}✅{% elif total > 10 %}🔴{% else %}⚠️{% endif %}</span>
+    <div>
+        <p class="font-bold text-base">
+            {% if total == 0 %}
+                All leads contacted — no stale leads found for {{ days }}+ days!
+            {% else %}
+                {{ total }} lead{{ 's' if total != 1 else '' }} have had no interaction in {{ days }}+ days
+            {% endif %}
+        </p>
+        {% if total > 0 %}
+        <p class="text-sm mt-0.5">Review and follow up to keep your pipeline healthy.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if total > 0 %}
+
+{% if session.role == 'super_admin' %}
+<!-- Super admin: grouped by counsellor -->
+{% for counsellor, leads in stale_by_user.items() %}
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
+    <div class="bg-slate-50 border-b border-slate-100 px-5 py-3 flex items-center justify-between">
+        <h2 class="font-bold text-slate-800 text-base">👤 {{ counsellor }}</h2>
+        <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+            {{ leads|length }} stale lead{{ 's' if leads|length != 1 else '' }}
+        </span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-100">
+                <tr>
+                    <th class="px-4 py-3 w-10">
+                        <input type="checkbox" class="group-select-all w-4 h-4 rounded border-slate-300 text-red-600 cursor-pointer"
+                               onchange="toggleGroupSelect(this)">
+                    </th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Name</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700 hidden sm:table-cell">Phone</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700 hidden md:table-cell">Country</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Silent</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700 hidden lg:table-cell">Score</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for lead in leads %}
+                {% set ds = lead.days_silent | int %}
+                <tr class="hover:bg-slate-50 {% if ds >= 30 %}bg-red-50{% elif ds >= 14 %}bg-amber-50{% endif %}">
+                    <td class="px-4 py-3 w-10">
+                        <input type="checkbox" class="stale-checkbox w-4 h-4 rounded border-slate-300 text-red-600 cursor-pointer"
+                               value="{{ lead.id }}" onchange="updateStaleDeleteBtn()">
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-slate-900">{{ lead.name }}</td>
+                    <td class="px-4 py-3 text-slate-700 hidden sm:table-cell">{{ lead.phone }}</td>
+                    <td class="px-4 py-3 text-slate-700 hidden md:table-cell">{{ lead.country_preference or 'N/A' }}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
+                            {{ lead.lead_status }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        {% if lead.lead_status == 'Not Yet Contacted' %}
+                        <span class="font-bold text-red-600">⛔ Never contacted</span>
+                        <span class="block text-xs text-slate-400 mt-0.5">{{ ds }}d since last attempt</span>
+                        {% else %}
+                        <span class="font-bold {% if ds >= 30 %}text-red-600{% elif ds >= 14 %}text-amber-600{% else %}text-slate-700{% endif %}">
+                            {{ ds }}d ago
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 hidden lg:table-cell">
+                        <span class="px-2 py-0.5 text-xs font-bold rounded-full
+                            {% if lead.score_category == 'Hot' %}bg-red-100 text-red-700
+                            {% elif lead.score_category == 'Warm' %}bg-yellow-100 text-yellow-700
+                            {% else %}bg-slate-100 text-slate-600{% endif %}">
+                            {{ lead.score or 0 }} {{ lead.score_category or 'Cold' }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex gap-2 flex-wrap">
+                            <a href="{{ url_for('view_lead', lead_id=lead.id) }}"
+                               class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition whitespace-nowrap">
+                                View
+                            </a>
+                            {% if lead.whatsapp %}
+                            {% set wa_num = lead.whatsapp.replace('+', '').replace(' ', '').replace('-', '') %}
+                            {% set wa_msg = "Hi " ~ lead.name ~ ", just checking in on your study abroad plans. Let's schedule a quick call to discuss your application. 😊" %}
+                            <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg | urlencode }}" target="_blank"
+                               class="bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-green-100 transition whitespace-nowrap">
+                                WhatsApp
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Bulk Delete Password Modal -->
+<div id="bulk-delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h2 class="text-lg font-bold text-red-700 mb-1">🗑 Bulk Delete Leads</h2>
+        <p class="text-sm text-slate-600 mb-4">
+            You are about to permanently delete <strong id="modal-del-count">0</strong> stale lead(s).
+            This cannot be undone. Enter your admin password to confirm.
+        </p>
+        <form method="POST" action="{{ url_for('bulk_delete_leads') }}" id="bulk-delete-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div id="bulk-delete-ids"></div>
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Admin Password</label>
+                <input type="password" name="password" required
+                       placeholder="Enter your password to confirm"
+                       class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-300">
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeBulkDeleteModal()"
+                        class="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-200 transition text-sm">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="flex-1 bg-red-600 text-white font-bold py-2.5 rounded-xl hover:bg-red-700 transition text-sm">
+                    Delete Permanently
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateStaleDeleteBtn() {
+    var checked = document.querySelectorAll('.stale-checkbox:checked');
+    var btn     = document.getElementById('bulk-delete-btn');
+    var cnt     = document.getElementById('bulk-del-count');
+    if (btn) {
+        cnt.textContent = checked.length;
+        if (checked.length > 0) {
+            btn.classList.remove('hidden');
+        } else {
+            btn.classList.add('hidden');
+        }
+    }
+}
+function toggleGroupSelect(master) {
+    var table = master.closest('table');
+    table.querySelectorAll('.stale-checkbox').forEach(function(cb) {
+        cb.checked = master.checked;
+    });
+    updateStaleDeleteBtn();
+}
+function showBulkDeleteModal() {
+    var checked = document.querySelectorAll('.stale-checkbox:checked');
+    if (checked.length === 0) return;
+    var idsContainer = document.getElementById('bulk-delete-ids');
+    idsContainer.innerHTML = '';
+    checked.forEach(function(cb) {
+        var inp = document.createElement('input');
+        inp.type  = 'hidden';
+        inp.name  = 'lead_ids';
+        inp.value = cb.value;
+        idsContainer.appendChild(inp);
+    });
+    document.getElementById('modal-del-count').textContent = checked.length;
+    document.getElementById('bulk-delete-modal').classList.remove('hidden');
+}
+function closeBulkDeleteModal() {
+    document.getElementById('bulk-delete-modal').classList.add('hidden');
+}
+</script>
+
+{% else %}
+<!-- Regular user: flat list (their own leads only) -->
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-100">
+                <tr>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Name</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700 hidden sm:table-cell">Phone</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700 hidden md:table-cell">Country</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Silent</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-700">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for lead in stale_leads %}
+                {% set ds = lead.days_silent | int %}
+                <tr class="hover:bg-slate-50 {% if ds >= 30 %}bg-red-50{% elif ds >= 14 %}bg-amber-50{% endif %}">
+                    <td class="px-4 py-3 font-semibold text-slate-900">{{ lead.name }}</td>
+                    <td class="px-4 py-3 text-slate-700 hidden sm:table-cell">{{ lead.phone }}</td>
+                    <td class="px-4 py-3 text-slate-700 hidden md:table-cell">{{ lead.country_preference or 'N/A' }}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
+                            {{ lead.lead_status }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        {% if lead.lead_status == 'Not Yet Contacted' %}
+                        <span class="font-bold text-red-600">⛔ Never contacted</span>
+                        <span class="block text-xs text-slate-400 mt-0.5">{{ ds }}d since last attempt</span>
+                        {% else %}
+                        <span class="font-bold {% if ds >= 30 %}text-red-600{% elif ds >= 14 %}text-amber-600{% else %}text-slate-700{% endif %}">
+                            {{ ds }}d ago
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex gap-2 flex-wrap">
+                            <a href="{{ url_for('view_lead', lead_id=lead.id) }}"
+                               class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition whitespace-nowrap">
+                                View & Log
+                            </a>
+                            {% if lead.whatsapp %}
+                            {% set wa_num = lead.whatsapp.replace('+', '').replace(' ', '').replace('-', '') %}
+                            {% set wa_msg = "Hi " ~ lead.name ~ ", just checking in on your study abroad plans. Let's schedule a quick call! 😊" %}
+                            <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg | urlencode }}" target="_blank"
+                               class="bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-green-100 transition whitespace-nowrap">
+                                WhatsApp
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

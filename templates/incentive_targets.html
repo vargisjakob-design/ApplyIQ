@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}Incentive Targets{% endblock %}
+{% block content %}
+
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900">🎯 Incentive Targets</h1>
+        <p class="text-slate-500 text-sm mt-1">Set registration & win targets with tiered incentive amounts for your team.</p>
+    </div>
+    <button onclick="document.getElementById('create-form').classList.toggle('hidden')"
+            class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 transition flex-shrink-0">
+        + New Target
+    </button>
+</div>
+
+<!-- ── Create target form (hidden by default) ────────────────────────────── -->
+<div id="create-form" class="hidden bg-white rounded-2xl shadow-sm border border-indigo-100 p-6 mb-8">
+    <h2 class="text-base font-bold text-slate-800 mb-5">Create New Incentive Target</h2>
+    <form method="POST" action="{{ url_for('incentive_targets') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="create_target">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Target Label</label>
+                <input type="text" name="label" placeholder="e.g. Q1 2026 Target"
+                       class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Period Type</label>
+                <select name="period_type"
+                        class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly" selected>Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Start Date</label>
+                <input type="date" name="period_start" required
+                       class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">End Date</label>
+                <input type="date" name="period_end" required
+                       class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Registration Target (count)</label>
+                <input type="number" name="registration_target" min="0" value="0"
+                       class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Closed-Won Target (count)</label>
+                <input type="number" name="won_target" min="0" value="0"
+                       class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+            </div>
+        </div>
+
+        <!-- Tiers section -->
+        <div class="border-t border-slate-100 pt-5 mb-5">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-bold text-slate-700">Incentive Tiers</h3>
+                <button type="button" onclick="addTierRow()"
+                        class="text-xs font-bold text-indigo-600 hover:text-indigo-800 border border-indigo-200 bg-indigo-50 px-3 py-1 rounded-lg">
+                    + Add Tier
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">Define what percentage of target must be achieved to unlock each incentive amount.</p>
+            <div id="tiers-container" class="space-y-2">
+                <!-- Default three tiers -->
+                <div class="tier-row grid grid-cols-3 gap-3 items-end">
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Tier Label</label>
+                        <input type="text" name="tier_label" value="Bronze"
+                               class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Threshold (%)</label>
+                        <input type="number" name="tier_threshold" value="50" min="1" max="100"
+                               class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Amount (₹)</label>
+                        <input type="number" name="tier_amount" value="2000" min="0" step="100"
+                               class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                    </div>
+                </div>
+                <div class="tier-row grid grid-cols-3 gap-3 items-end">
+                    <div><input type="text" name="tier_label" value="Silver"
+                                class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2"></div>
+                    <div><input type="number" name="tier_threshold" value="75" min="1" max="100"
+                                class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2"></div>
+                    <div><input type="number" name="tier_amount" value="4000" min="0" step="100"
+                                class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2"></div>
+                </div>
+                <div class="tier-row grid grid-cols-3 gap-3 items-end">
+                    <div><input type="text" name="tier_label" value="Gold"
+                                class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2"></div>
+                    <div><input type="number" name="tier_threshold" value="100" min="1" max="100"
+                                class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2"></div>
+                    <div><input type="number" name="tier_amount" value="8000" min="0" step="100"
+                                class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <button type="submit"
+                    class="bg-indigo-600 text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-indigo-700 transition">
+                Create Target
+            </button>
+            <button type="button" onclick="document.getElementById('create-form').classList.add('hidden')"
+                    class="bg-slate-100 text-slate-600 text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-slate-200 transition">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- ── Existing targets ──────────────────────────────────────────────────── -->
+{% if targets_data %}
+{% for td in targets_data %}
+{% set target = td.target %}
+{% set tiers  = td.tiers %}
+{% set users  = td.user_progress %}
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+    <!-- Target header -->
+    <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            {% if target.is_active %}
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+            <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Active</span>
+            {% else %}
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-300 flex-shrink-0"></span>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Inactive</span>
+            {% endif %}
+            <h2 class="text-base font-bold text-slate-900">
+                {{ target.label or (target.period_type | capitalize ~ ' Target') }}
+            </h2>
+            <span class="text-xs text-slate-500 bg-slate-100 rounded-full px-2.5 py-1 font-semibold">
+                {{ target.period_type | capitalize }}
+            </span>
+        </div>
+        <div class="flex items-center gap-4 text-xs text-slate-500">
+            <span>📅 {{ target.period_start.strftime('%d %b %Y') if target.period_start else '' }} →
+                  {{ target.period_end.strftime('%d %b %Y') if target.period_end else '' }}</span>
+            <span class="font-bold text-slate-700">🎓 {{ target.registration_target }} Regs</span>
+            <span class="font-bold text-slate-700">🏆 {{ target.won_target }} Wins</span>
+        </div>
+        <div class="flex gap-2">
+            {% if target.is_active %}
+            <form method="POST" action="{{ url_for('incentive_targets') }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="deactivate">
+                <input type="hidden" name="target_id" value="{{ target.id }}">
+                <button type="submit"
+                        class="text-xs font-bold text-amber-600 border border-amber-200 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition">
+                    Deactivate
+                </button>
+            </form>
+            {% endif %}
+            <form method="POST" action="{{ url_for('incentive_targets') }}" class="inline"
+                  onsubmit="return confirm('Delete this target and all its tiers? This cannot be undone.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="delete_target">
+                <input type="hidden" name="target_id" value="{{ target.id }}">
+                <button type="submit"
+                        class="text-xs font-bold text-red-500 border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tiers strip -->
+    {% if tiers %}
+    <div class="px-6 py-3 bg-indigo-50/50 border-b border-indigo-100 flex flex-wrap gap-3">
+        {% set tier_colors = ['bg-amber-100 text-amber-800 border-amber-200',
+                               'bg-slate-100 text-slate-700 border-slate-200',
+                               'bg-yellow-100 text-yellow-800 border-yellow-200',
+                               'bg-indigo-100 text-indigo-800 border-indigo-200'] %}
+        {% for tier in tiers %}
+        <div class="flex items-center gap-2 border rounded-xl px-3 py-1.5 text-xs font-bold {{ tier_colors[loop.index0 % 4] }}">
+            <span>{{ tier.tier_label }}</span>
+            <span class="opacity-60">·</span>
+            <span>≥{{ tier.threshold_percent }}%</span>
+            <span class="opacity-60">→</span>
+            <span>₹{{ "%.0f" | format(tier.incentive_amount) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Counsellor progress table -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-100">
+                <tr>
+                    <th class="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase tracking-wider">Counsellor</th>
+                    <th class="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase tracking-wider">Registrations</th>
+                    <th class="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase tracking-wider">Wins</th>
+                    <th class="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase tracking-wider">Overall %</th>
+                    <th class="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase tracking-wider">Tier Achieved</th>
+                    <th class="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase tracking-wider">Incentive Earned</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for u in users %}
+                <tr class="hover:bg-slate-50">
+                    <td class="px-5 py-3 font-semibold text-slate-900">{{ u.name }}</td>
+                    <td class="px-5 py-3">
+                        <span class="text-slate-800 font-bold">{{ u.registrations }}</span>
+                        <span class="text-slate-400 text-xs"> / {{ target.registration_target }}</span>
+                        <div class="mt-1 w-24 bg-slate-100 rounded-full h-1.5">
+                            <div class="bg-indigo-500 h-1.5 rounded-full" style="width: {{ [u.reg_pct, 100] | min }}%"></div>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3">
+                        <span class="text-slate-800 font-bold">{{ u.won }}</span>
+                        <span class="text-slate-400 text-xs"> / {{ target.won_target }}</span>
+                        <div class="mt-1 w-24 bg-slate-100 rounded-full h-1.5">
+                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ [u.won_pct, 100] | min }}%"></div>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3">
+                        <span class="font-extrabold text-lg
+                            {% if u.overall_pct >= 100 %}text-emerald-600
+                            {% elif u.overall_pct >= 75 %}text-indigo-600
+                            {% elif u.overall_pct >= 50 %}text-amber-600
+                            {% else %}text-slate-500{% endif %}">
+                            {{ u.overall_pct }}%
+                        </span>
+                    </td>
+                    <td class="px-5 py-3">
+                        {% if u.earned_tier %}
+                        <span class="inline-block bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-full">
+                            {{ u.earned_tier.tier_label }}
+                        </span>
+                        {% else %}
+                        <span class="text-xs text-slate-400">None yet</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3">
+                        <span class="font-bold {% if u.earned_amount > 0 %}text-emerald-700{% else %}text-slate-400{% endif %}">
+                            ₹{{ "%.0f" | format(u.earned_amount) }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-5 py-8 text-center text-slate-400 text-sm">No counsellors found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+
+{% else %}
+<div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-16 text-center">
+    <p class="text-4xl mb-3">🎯</p>
+    <p class="text-slate-600 font-semibold text-lg">No targets created yet</p>
+    <p class="text-slate-400 text-sm mt-1">Click "New Target" to set your first incentive target.</p>
+</div>
+{% endif %}
+
+<script>
+function addTierRow() {
+    var container = document.getElementById('tiers-container');
+    var row = document.createElement('div');
+    row.className = 'tier-row grid grid-cols-3 gap-3 items-end';
+    row.innerHTML =
+        '<div><input type="text" name="tier_label" placeholder="Tier name" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2"></div>' +
+        '<div><input type="number" name="tier_threshold" placeholder="%" min="1" max="100" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2"></div>' +
+        '<div class="flex gap-1"><input type="number" name="tier_amount" placeholder="₹" min="0" step="100" class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2">' +
+        '<button type="button" onclick="this.closest(\'.tier-row\').remove()" class="text-red-400 hover:text-red-600 text-lg px-1">×</button></div>';
+    container.appendChild(row);
+}
+</script>
+
+{% endblock %}

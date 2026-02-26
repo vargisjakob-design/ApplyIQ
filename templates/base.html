@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ApplyIQ Lead Management{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body class="bg-slate-50 flex flex-col min-h-screen text-slate-900">
+    
+    {% if session.user_id %}
+    <nav class="bg-white shadow-sm border-b border-slate-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('dashboard') }}" class="text-xl font-bold text-blue-600 mr-8 flex-shrink-0">
+                        ApplyIQ
+                    </a>
+                    <div class="hidden md:flex items-center space-x-1">
+                        <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Dashboard</a>
+                        <a href="{{ url_for('leads_list') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Leads</a>
+                        <a href="{{ url_for('stale_leads') }}" class="px-3 py-2 rounded-md text-sm font-medium text-amber-600 hover:bg-amber-50 hover:text-amber-700">⏰ Stale</a>
+                        {% if session.role == 'super_admin' %}
+                        <a href="{{ url_for('users_list') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Users</a>
+                        <a href="{{ url_for('courses_list') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Courses</a>
+                        <a href="{{ url_for('incentive_targets') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Targets</a>
+                        {% endif %}
+                        <a href="{{ url_for('import_leads') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Import</a>
+                        <a href="{{ url_for('reports') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Reports</a>
+                        <a href="{{ url_for('audit_logs') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Audit Logs</a>
+                        <a href="{{ url_for('leaderboard') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Leaderboard</a>
+                        <a href="{{ url_for('my_incentives') }}" class="px-3 py-2 rounded-md text-sm font-medium text-amber-600 hover:bg-amber-50 hover:text-amber-700">🎯 Incentives</a>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-4">
+                    <!-- 🔔 Notification Bell -->
+                    <div class="relative" id="notif-wrapper">
+                        <button id="notif-btn"
+                                onclick="toggleNotifDropdown()"
+                                class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition focus:outline-none">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            {% if unread_notification_count > 0 %}
+                            <span id="notif-badge"
+                                  class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center px-1 leading-none">
+                                {{ unread_notification_count if unread_notification_count <= 99 else '99+' }}
+                            </span>
+                            {% else %}
+                            <span id="notif-badge" class="hidden"></span>
+                            {% endif %}
+                        </button>
+
+                        <!-- Dropdown -->
+                        <div id="notif-dropdown"
+                             class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden">
+                            <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                                <span class="text-sm font-bold text-slate-800">Notifications</span>
+                                <div class="flex gap-2">
+                                    <button onclick="markAllRead()" class="text-xs text-indigo-600 font-semibold hover:text-indigo-800 transition">Mark all read</button>
+                                    <span class="text-slate-300">|</span>
+                                    <a href="{{ url_for('notifications_page') }}" class="text-xs text-slate-500 font-semibold hover:text-slate-700 transition">View all</a>
+                                </div>
+                            </div>
+                            <div id="notif-list" class="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                                <div class="px-4 py-6 text-center text-slate-400 text-sm">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-right">
+                        <span class="block text-sm font-semibold text-slate-900">{{ session.user_name }}</span>
+                        <span class="block text-xs text-blue-600 font-medium uppercase tracking-wider">{{ session.role }}</span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="bg-slate-900 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Logout</a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-slate-600 hover:text-blue-600 focus:outline-none p-2">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100">
+                <div class="px-2 pt-2 pb-3 space-y-1">
+                    <a href="{{ url_for('dashboard') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Dashboard</a>
+                    <a href="{{ url_for('leads_list') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Leads</a>
+                    <a href="{{ url_for('stale_leads') }}" class="block px-3 py-2 rounded-md text-base font-medium text-amber-600 hover:bg-amber-50">⏰ Stale Leads</a>
+                    {% if session.role == 'super_admin' %}
+                    <a href="{{ url_for('users_list') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Users</a>
+                    <a href="{{ url_for('courses_list') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Courses</a>
+                    <a href="{{ url_for('incentive_targets') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Targets</a>
+                    {% endif %}
+                    <a href="{{ url_for('import_leads') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Import CSV</a>
+                    <a href="{{ url_for('reports') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Reports</a>
+                    <a href="{{ url_for('audit_logs') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Audit Logs</a>
+                    <a href="{{ url_for('leaderboard') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-blue-600">Leaderboard</a>
+                    <a href="{{ url_for('my_incentives') }}" class="block px-3 py-2 rounded-md text-base font-medium text-amber-600 hover:bg-amber-50">🎯 My Incentives</a>
+                    <div class="border-t border-slate-100 my-2"></div>
+                    <div class="px-3 py-2">
+                        <span class="block text-sm font-semibold text-slate-900">{{ session.user_name }}</span>
+                        <span class="block text-xs text-blue-600 font-medium">{{ session.role }}</span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+                {% for category, message in messages %}
+                    <div class="{% if category == 'error' %}bg-red-50 border-red-200 text-red-800{% elif category == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-yellow-50 border-yellow-200 text-yellow-800{% endif %} border px-4 py-3 rounded-lg mb-4 text-sm font-medium">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="bg-white border-t border-slate-100 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+            <p class="text-sm text-slate-500">&copy; 2026 ApplyIQ Lead Management SaaS. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle both landing page and logged-in menu
+        var mobileBtn = document.getElementById('mobile-menu-btn');
+        var mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileBtn && mobileMenu) {
+            mobileBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                mobileMenu.classList.toggle('hidden');
+                console.log('Menu toggled'); // Check browser console
+            });
+        } else {
+            console.log('Button or menu not found');
+        }
+    });
+    </script>
+
+    <!-- ── TIER 4: Notification dropdown JS ─────────────────────────────── -->
+    <script>
+    var notifLoaded = false;
+    function toggleNotifDropdown() {
+        var dd = document.getElementById('notif-dropdown');
+        if (!dd) return;
+        dd.classList.toggle('hidden');
+        if (!dd.classList.contains('hidden') && !notifLoaded) {
+            loadNotifications();
+        }
+    }
+    function loadNotifications() {
+        fetch('/api/notifications')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                notifLoaded = true;
+                var list = document.getElementById('notif-list');
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<div class="px-4 py-6 text-center text-slate-400 text-sm">You\'re all caught up! 🎉</div>';
+                    return;
+                }
+                var icons = {
+                    'new_lead': '👤', 'lead_assigned': '📋', 'followup_due': '📅',
+                    'followup_overdue': '⚠️', 'portal_upload': '📎',
+                    'escalation': '🚨', 'lead_stale': '⏰'
+                };
+                list.innerHTML = data.map(function(n) {
+                    var icon = icons[n.type] || '🔔';
+                    var unread = !n.is_read ? 'bg-indigo-50/60' : '';
+                    var dot = !n.is_read ? '<span class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0 mt-1.5"></span>' : '<span class="w-2 h-2 flex-shrink-0"></span>';
+                    var link = n.lead_id ? '/leads/view/' + n.lead_id : '/notifications';
+                    return '<a href="' + link + '" class="flex gap-3 px-4 py-3 hover:bg-slate-50 transition ' + unread + '">' +
+                        dot +
+                        '<div class="flex-1 min-w-0">' +
+                            '<p class="text-xs font-bold text-slate-800 truncate">' + icon + ' ' + n.title + '</p>' +
+                            '<p class="text-xs text-slate-500 mt-0.5 line-clamp-2">' + n.body + '</p>' +
+                            '<p class="text-[10px] text-slate-400 mt-1">' + n.created_fmt + '</p>' +
+                        '</div>' +
+                    '</a>';
+                }).join('');
+                // Update badge
+                var unreadCount = data.filter(function(n) { return !n.is_read; }).length;
+                var badge = document.getElementById('notif-badge');
+                if (badge) {
+                    if (unreadCount > 0) {
+                        badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            })
+            .catch(function() {
+                document.getElementById('notif-list').innerHTML = '<div class="px-4 py-6 text-center text-slate-400 text-sm">Could not load notifications.</div>';
+            });
+    }
+    function markAllRead() {
+        fetch('/notifications/mark-all-read', { method: 'POST',
+            headers: {'X-CSRFToken': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''} })
+            .then(function() {
+                notifLoaded = false;
+                loadNotifications();
+                var badge = document.getElementById('notif-badge');
+                if (badge) badge.classList.add('hidden');
+            });
+    }
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+        var wrapper = document.getElementById('notif-wrapper');
+        var dd = document.getElementById('notif-dropdown');
+        if (wrapper && dd && !wrapper.contains(e.target)) {
+            dd.classList.add('hidden');
+        }
+    });
+    </script>
+
+</body>
+</html>

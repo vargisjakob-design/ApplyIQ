@@ -1,0 +1,1131 @@
+{% extends "base.html" %}
+
+{% block title %}Lead Details - {{ lead.name }}{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  * { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+  .lead-page { background: #f5f6fa; min-height: 100vh; }
+
+  /* Soft card style */
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #eaecf0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 16px;
+  }
+
+  /* Score badge */
+  .score-hot   { background: #fff1f0; color: #c0392b; border: 1.5px solid #fca5a5; }
+  .score-warm  { background: #fffbeb; color: #b45309; border: 1.5px solid #fcd34d; }
+  .score-cold  { background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; }
+
+  /* Info row */
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .label { color: #64748b; font-weight: 500; flex-shrink: 0; }
+  .info-row .value { color: #0f172a; font-weight: 600; text-align: right; }
+
+  /* WA buttons */
+  .wa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    border: 1.5px solid transparent;
+  }
+  .wa-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  .wa-btn-first  { background: #dcfce7; color: #166534; border-color: #86efac; }
+  .wa-btn-follow { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  .wa-btn-doc    { background: #f3e8ff; color: #7e22ce; border-color: #d8b4fe; }
+  .wa-btn-congrats { background: #fef9c3; color: #854d0e; border-color: #fde68a; }
+
+  /* Urgency banner */
+  .urgency-critical { background: #fff1f0; border: 1.5px solid #fca5a5; border-radius: 16px; }
+  .urgency-warn     { background: #fffbeb; border: 1.5px solid #fcd34d; border-radius: 16px; }
+
+  /* Action buttons */
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    background: none;
+  }
+  .action-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.10); }
+  .btn-edit    { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .btn-reassign { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
+  .btn-delete  { background: #fff1f0; color: #b91c1c; border-color: #fecaca; }
+
+  /* Input styling */
+  .form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #f8fafc;
+    transition: all 0.15s;
+    outline: none;
+    color: #0f172a;
+  }
+  .form-input:focus { border-color: #6366f1; background: #fff; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Submit btn */
+  .btn-primary {
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary:hover { background: #0f172a; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+
+  .btn-indigo {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-indigo:hover { background: #4f46e5; }
+
+  .btn-green {
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-green:hover { background: #15803d; }
+
+  /* Doc card */
+  .doc-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid #f1f5f9;
+    border-radius: 14px;
+    background: #fafafa;
+    transition: border-color 0.15s;
+    margin-bottom: 10px;
+  }
+  .doc-card:hover { border-color: #c7d2fe; }
+
+  /* Interaction card */
+  .note-card {
+    padding: 16px;
+    border: 1.5px solid #f1f5f9;
+    border-radius: 14px;
+    background: #fafafa;
+    margin-bottom: 12px;
+  }
+  .note-card:hover { border-color: #e0e7ff; }
+
+  /* Followup card */
+  .followup-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid #f1f5f9;
+    border-radius: 14px;
+    background: #fafafa;
+    margin-bottom: 10px;
+  }
+  .followup-card:hover { border-color: #bbf7d0; }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    background: #f8fafc;
+    border-radius: 14px;
+    border: 1.5px dashed #e2e8f0;
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #6366f1;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: gap 0.15s;
+  }
+  .back-link:hover { gap: 10px; }
+
+  /* Serial badge */
+  .serial-badge {
+    display: inline-block;
+    background: #eff6ff;
+    color: #2563eb;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 8px;
+    border: 1px solid #bfdbfe;
+    letter-spacing: 0.05em;
+  }
+
+  /* ══════════════════════════════════════════
+     INDIVIDUAL CHEVRON PIPELINE
+  ══════════════════════════════════════════ */
+
+  /* Current stage badge */
+  .pipe-current {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 40px;
+    padding: 6px 14px;
+    margin-bottom: 14px;
+  }
+  .pipe-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+    animation: pdot 2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pdot {
+    0%,100% { box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+    50%      { box-shadow: 0 0 0 6px rgba(99,102,241,0.08); }
+  }
+
+  /* Wrapper handles the mobile connector arrow */
+  .pipeline-wrapper {
+    position: relative;
+  }
+
+  /* Desktop: single horizontal chevron row */
+  .pipeline-flow {
+    display: flex;
+    align-items: stretch;
+  }
+
+  /* Each individual step */
+  .ps-step {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 4px 8px 14px;
+    height: 54px;
+    cursor: pointer;
+    border: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--ps-bg);
+    color: var(--ps-tc);
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
+    transition: filter 0.15s;
+    text-decoration: none;
+    margin-left: -8px; /* overlap to hide gap between chevrons */
+  }
+  .ps-step:first-child {
+    margin-left: 0;
+    padding-left: 10px;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
+    border-radius: 10px 0 0 10px;
+  }
+  .ps-step:last-child {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 10px 50%);
+    border-radius: 0 10px 10px 0;
+  }
+  .ps-step:hover { filter: brightness(0.9); }
+
+  /* z-index so each step's arrow overlaps the next */
+  .ps-1  { z-index: 1;  }
+  .ps-2  { z-index: 2;  }
+  .ps-3  { z-index: 3;  }
+  .ps-4  { z-index: 4;  }
+  .ps-5  { z-index: 5;  }
+  .ps-6  { z-index: 6;  }
+  .ps-7  { z-index: 7;  }
+  .ps-8  { z-index: 8;  }
+  .ps-9  { z-index: 9;  }
+  .ps-10 { z-index: 10; }
+
+  .ps-icon  { font-size: 13px; line-height: 1; }
+  .ps-label {
+    font-size: 8.5px;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+  }
+
+  /* ── Per-step colour tokens (inactive) ── */
+  .ps-1  { --ps-bg: #e2e8f0; --ps-tc: #475569; }  /* slate   */
+  .ps-2  { --ps-bg: #dbeafe; --ps-tc: #1e40af; }  /* blue    */
+  .ps-3  { --ps-bg: #dcfce7; --ps-tc: #166534; }  /* green   */
+  .ps-4  { --ps-bg: #fee2e2; --ps-tc: #991b1b; }  /* red     */
+  .ps-5  { --ps-bg: #ffedd5; --ps-tc: #9a3412; }  /* orange  */
+  .ps-6  { --ps-bg: #fef9c3; --ps-tc: #78350f; }  /* amber   */
+  .ps-7  { --ps-bg: #ede9fe; --ps-tc: #5b21b6; }  /* violet  */
+  .ps-8  { --ps-bg: #ccfbf1; --ps-tc: #134e4a; }  /* teal    */
+  .ps-9  { --ps-bg: #d1fae5; --ps-tc: #065f46; }  /* emerald */
+  .ps-10 { --ps-bg: #ffe4e6; --ps-tc: #9f1239; }  /* rose    */
+
+  /* ── Active (current stage) ── */
+  .ps-active.ps-1  { --ps-bg: #64748b; --ps-tc: #fff; }
+  .ps-active.ps-2  { --ps-bg: #3b82f6; --ps-tc: #fff; }
+  .ps-active.ps-3  { --ps-bg: #22c55e; --ps-tc: #fff; }
+  .ps-active.ps-4  { --ps-bg: #ef4444; --ps-tc: #fff; }
+  .ps-active.ps-5  { --ps-bg: #f97316; --ps-tc: #fff; }
+  .ps-active.ps-6  { --ps-bg: #eab308; --ps-tc: #fff; }
+  .ps-active.ps-7  { --ps-bg: #8b5cf6; --ps-tc: #fff; }
+  .ps-active.ps-8  { --ps-bg: #14b8a6; --ps-tc: #fff; }
+  .ps-active.ps-9  { --ps-bg: #10b981; --ps-tc: #fff; }
+  .ps-active.ps-10 { --ps-bg: #e11d48; --ps-tc: #fff; }
+
+  /* Done (steps before active) — slightly brighter than inactive */
+  .ps-done { opacity: 0.72; }
+
+  /* ══════════════════════════════════════════
+     MOBILE SNAKE LAYOUT  (< 640px)
+  ══════════════════════════════════════════ */
+  @media (max-width: 639px) {
+    .pipeline-wrapper { padding-right: 26px; } /* room for connector */
+
+    .pipeline-flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+    }
+
+    /* Remove chevron clip-path, become pill cards */
+    .ps-step {
+      clip-path: none !important;
+      border-radius: 10px !important;
+      margin-left: 0 !important;
+      padding: 8px 2px !important;
+      height: auto;
+      min-height: 50px;
+    }
+    .ps-step:first-child { border-radius: 10px !important; padding-left: 2px !important; }
+    .ps-step:last-child  { border-radius: 10px !important; }
+
+    /* Row 1 (left → right): steps 1–5 */
+    .ps-1  { grid-column: 1; grid-row: 1; }
+    .ps-2  { grid-column: 2; grid-row: 1; }
+    .ps-3  { grid-column: 3; grid-row: 1; }
+    .ps-4  { grid-column: 4; grid-row: 1; }
+    .ps-5  { grid-column: 5; grid-row: 1; }
+
+    /* Row 2 (right → left): steps 6–10 */
+    .ps-6  { grid-column: 5; grid-row: 2; }
+    .ps-7  { grid-column: 4; grid-row: 2; }
+    .ps-8  { grid-column: 3; grid-row: 2; }
+    .ps-9  { grid-column: 2; grid-row: 2; }
+    .ps-10 { grid-column: 1; grid-row: 2; }
+
+    /* Connector arrow (absolutely positioned in the padding-right space) */
+    .pipeline-snake-bend {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 22px;
+      height: 100%;
+      color: #94a3b8;
+      gap: 2px;
+    }
+    .pipeline-snake-bend svg { width: 16px; height: 16px; }
+
+    .ps-label { font-size: 7.5px; }
+    .ps-icon  { font-size: 12px; }
+  }
+
+  @media (min-width: 640px) {
+    .pipeline-snake-bend { display: none !important; }
+  }
+
+  /* Responsive grid */
+  @media (max-width: 640px) {
+    .card { padding: 16px; }
+    .two-col { display: block !important; }
+    .two-col > * { margin-bottom: 20px; }
+  }
+
+  /* Fade-in animation */
+  .fade-in {
+    animation: fadeUp 0.4s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .wa-icon { width: 14px; height: 14px; flex-shrink: 0; }
+</style>
+
+<!-- Back link -->
+<div class="fade-in" style="animation-delay:0s">
+  <a href="{{ url_for('leads_list') }}" class="back-link">
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    Back to All Leads
+  </a>
+</div>
+
+<!-- ═══════════════ HERO HEADER ═══════════════ -->
+<div class="card fade-in" style="animation-delay:0.05s">
+  <div class="two-col" style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+    <div>
+      <p class="section-label" style="margin-bottom:6px;">Student Lead</p>
+      <h1 style="font-size:clamp(24px, 5vw, 34px); font-weight:800; color:#0f172a; line-height:1.15; margin:0 0 10px;">{{ lead.name }}</h1>
+      <span class="serial-badge">{{ lead.serial_number }}</span>
+    </div>
+
+    <!-- Lead Score -->
+    <div style="flex-shrink:0; text-align:center;">
+      <div class="score-{{ category|lower }}" style="padding:12px 20px; border-radius:16px; display:inline-block;">
+        <div style="font-size:22px; font-weight:800; line-height:1;">{{ category }}</div>
+        <div style="font-size:12px; font-weight:600; margin-top:3px; opacity:0.75;">Score: {{ score }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assigned & Date strip -->
+  <div style="margin-top:20px; padding-top:16px; border-top:1px solid #f1f5f9; display:flex; flex-wrap:wrap; gap:20px; font-size:13px; color:#64748b;">
+    <span>
+      <strong style="color:#0f172a;">👤 Assigned to:</strong>
+      {{ lead.assigned_user_name }}
+      (<a href="mailto:{{ lead.assigned_user_email }}" style="color:#6366f1; text-decoration:none;">{{ lead.assigned_user_email }}</a>)
+    </span>
+    <span>
+      <strong style="color:#0f172a;">📅 Received:</strong>
+      {{ lead.lead_received_date|ddmmyyyy }}
+    </span>
+    {% if lead.first_contacted_at %}
+    <span>
+      <strong style="color:#0f172a;">⚡ First Contacted:</strong>
+      {{ lead.first_contacted_at|ddmmyyyy }}
+      {% if hours_to_first_contact is not none %}
+        <span style="background:{% if hours_to_first_contact <= 2 %}#dcfce7; color:#166534{% elif hours_to_first_contact <= 8 %}#fef9c3; color:#854d0e{% else %}#fee2e2; color:#991b1b{% endif %}; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; margin-left:6px;">{{ hours_to_first_contact }}h response time</span>
+      {% endif %}
+    </span>
+    {% elif lead.lead_status == 'Not Yet Contacted' %}
+    <span style="background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:8px; font-size:12px; font-weight:700;">🚨 Not Yet Contacted</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ═══════════════ URGENCY BANNER ═══════════════ -->
+{% set urgency = get_intake_urgency(lead.country_preference, lead.lead_status) %}
+{% if urgency %}
+<div class="fade-in urgency-{{ urgency.level if urgency.level == 'critical' else 'warn' }}"
+     style="display:flex; align-items:flex-start; gap:14px; padding:16px 20px; margin-bottom:20px; animation-delay:0.08s">
+  <div style="font-size:28px; line-height:1; flex-shrink:0;">
+    {{ '🔴' if urgency.level == 'critical' else '⚠️' }}
+  </div>
+  <div>
+    <p style="font-weight:800; font-size:15px; margin:0 0 4px; color:{{ '#991b1b' if urgency.level == 'critical' else '#92400e' }};">
+      {{ lead.country_preference }} intake in <strong>{{ urgency.days_until }} days</strong> — {{ urgency.intake_date_str }}
+    </p>
+    <p style="font-size:13px; margin:0; color:{{ '#b91c1c' if urgency.level == 'critical' else '#b45309' }};">
+      {% if urgency.level == 'critical' %}
+        🚨 This is urgent — application deadline is very close. Reach out to this student today!
+      {% else %}
+        Intake is coming up soon. Make sure all application documents are ready.
+      {% endif %}
+    </p>
+  </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════ NEXT BEST ACTION (TIER 1-D) ═══════════════ -->
+{% set nba = get_next_best_action(lead, interactions, followups) %}
+{% if nba %}
+<div class="fade-in" style="animation-delay:0.09s; margin-bottom:20px;">
+  <div style="
+    border-radius: 16px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    {% if nba.priority == 'critical' %}
+      background: #fff1f0; border: 2px solid #fca5a5;
+    {% elif nba.priority == 'warning' %}
+      background: #fffbeb; border: 2px solid #fcd34d;
+    {% else %}
+      background: #eff6ff; border: 2px solid #bfdbfe;
+    {% endif %}
+  ">
+    <div style="font-size:28px; line-height:1; flex-shrink:0; margin-top:2px;">{{ nba.icon }}</div>
+    <div style="flex:1;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px; flex-wrap:wrap;">
+        <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em;
+          {% if nba.priority == 'critical' %}color:#991b1b;
+          {% elif nba.priority == 'warning' %}color:#92400e;
+          {% else %}color:#1e40af;{% endif %}
+          background: {% if nba.priority == 'critical' %}#fecaca{% elif nba.priority == 'warning' %}#fde68a{% else %}#bfdbfe{% endif %};
+          padding: 2px 8px; border-radius: 20px;">
+          {% if nba.priority == 'critical' %}🔴 Urgent Action Required
+          {% elif nba.priority == 'warning' %}⚠️ Recommended Action
+          {% else %}💡 Next Best Action{% endif %}
+        </span>
+      </div>
+      <p style="font-weight:800; font-size:15px; margin:0 0 5px;
+        {% if nba.priority == 'critical' %}color:#991b1b;
+        {% elif nba.priority == 'warning' %}color:#92400e;
+        {% else %}color:#1e40af;{% endif %}">
+        {{ nba.title }}
+      </p>
+      <p style="font-size:13px; margin:0; line-height:1.6;
+        {% if nba.priority == 'critical' %}color:#b91c1c;
+        {% elif nba.priority == 'warning' %}color:#b45309;
+        {% else %}color:#1d4ed8;{% endif %}">
+        {{ nba.message }}
+      </p>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════ CONTACT + ACADEMIC (2 col) ═══════════════ -->
+<div class="two-col fade-in" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; animation-delay:0.1s">
+
+  <!-- Contact Info -->
+  <div class="card" style="margin-bottom:0">
+    <p class="section-label">📞 How to reach them</p>
+
+    <div class="info-row">
+      <span class="label">Phone</span>
+      <span class="value">{{ lead.phone }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">WhatsApp</span>
+      {% if lead.whatsapp %}
+        <span class="value">{{ lead.whatsapp }}</span>
+      {% else %}
+        <span style="color:#94a3b8; font-size:13px;">Not provided</span>
+      {% endif %}
+    </div>
+    <div class="info-row">
+      <span class="label">Email</span>
+      <span class="value" style="word-break:break-all;">{{ lead.email or '—' }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Location</span>
+      <span class="value">{{ lead.location or '—' }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Age</span>
+      <span class="value">{{ lead.age or '—' }}</span>
+    </div>
+
+    <!-- WhatsApp Quick Buttons -->
+    {% if lead.whatsapp %}
+    {% set wa_num = lead.whatsapp.replace('+', '').replace(' ', '').replace('-', '') %}
+    <div style="margin-top:18px; padding-top:16px; border-top:1px solid #f1f5f9;">
+      <p class="section-label" style="margin-bottom:10px;">💬 WhatsApp Quick Messages</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+
+        {% set msg1 = "Hi " ~ lead.name ~ "! 👋 This is " ~ session.user_name ~ " from our study abroad team. We received your enquiry" ~ (" about studying in " ~ lead.country_preference if lead.country_preference else "") ~ ". I'd love to learn more about your goals and guide you through the process. When's a good time to connect? 😊" %}
+        <a href="https://wa.me/{{ wa_num }}?text={{ msg1 | urlencode }}" target="_blank" class="wa-btn wa-btn-first">
+          <svg class="wa-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          First Contact
+        </a>
+
+        {% set msg2 = "Hi " ~ lead.name ~ "! 😊 Just checking in — " ~ session.user_name ~ " here. Have you had a chance to think about your study abroad plans" ~ (" for " ~ lead.country_preference if lead.country_preference else "") ~ "? I'm here to help if you have any questions. Let me know! 🎓" %}
+        <a href="https://wa.me/{{ wa_num }}?text={{ msg2 | urlencode }}" target="_blank" class="wa-btn wa-btn-follow">
+          <svg class="wa-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Follow-up
+        </a>
+
+        {% set msg3 = "Hi " ~ lead.name ~ "! 📄 This is " ~ session.user_name ~ ". To proceed with your application" ~ (" for " ~ lead.country_preference if lead.country_preference else "") ~ ", could you please share the following documents: passport copy, academic transcripts, and English test scores (if available)? Feel free to reply here. Thank you! 🙏" %}
+        <a href="https://wa.me/{{ wa_num }}?text={{ msg3 | urlencode }}" target="_blank" class="wa-btn wa-btn-doc">
+          <svg class="wa-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Request Docs
+        </a>
+
+        {% set msg4 = "Congratulations " ~ lead.name ~ "! 🎉🎓 This is " ~ session.user_name ~ ". We are thrilled to inform you that your visa has been approved! Wishing you all the very best for your studies" ~ (" in " ~ lead.country_preference if lead.country_preference else "") ~ ". It's been a pleasure working with you. Have an amazing journey ahead! ✈️🌟" %}
+        <a href="https://wa.me/{{ wa_num }}?text={{ msg4 | urlencode }}" target="_blank" class="wa-btn wa-btn-congrats">
+          <svg class="wa-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Visa Congrats 🎉
+        </a>
+
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Academic Info -->
+  <div class="card" style="margin-bottom:0">
+    <p class="section-label">🎓 Study Plans</p>
+
+    <div class="info-row">
+      <span class="label">Qualification</span>
+      <span class="value">{{ lead.highest_qualification or '—' }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Country</span>
+      <span class="value">{{ lead.country_preference or '—' }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Course Type</span>
+      <span class="value">{{ lead.course_type or '—' }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Course Level</span>
+      <span class="value">{{ lead.course_level or '—' }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Lead Source</span>
+      <span class="value">
+        <span style="background:#f1f5f9; padding:3px 10px; border-radius:8px; font-size:13px;">{{ lead.lead_source or 'Unknown' }}</span>
+      </span>
+    </div>
+
+    <!-- ── TIER 3-I: Study Abroad Specific Fields ── -->
+    {% if lead.preferred_intake or lead.budget_range or lead.visa_history or lead.ielts_score or lead.ielts_planned_date or lead.competitor_consulted or lead.referral_name %}
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #f1f5f9;">
+      <p class="section-label" style="margin-bottom:10px; color:#16a34a;">🌏 Study Abroad Details</p>
+
+      {% if lead.preferred_intake %}
+      <div class="info-row">
+        <span class="label">Preferred Intake</span>
+        <span class="value" style="color:#4f46e5; font-weight:700;">{{ lead.preferred_intake }}</span>
+      </div>
+      {% endif %}
+
+      {% if lead.budget_range %}
+      <div class="info-row">
+        <span class="label">Budget Range</span>
+        <span class="value">{{ lead.budget_range }}</span>
+      </div>
+      {% endif %}
+
+      {% if lead.visa_history %}
+      <div class="info-row">
+        <span class="label">Visa History</span>
+        <span class="value {% if lead.visa_history == 'Previous Refusal' %}style="color:#dc2626;"{% endif %}">
+          {% if lead.visa_history == 'Previous Refusal' %}⚠️ {% endif %}{{ lead.visa_history }}
+        </span>
+      </div>
+      {% endif %}
+
+      {% if lead.ielts_score %}
+      <div class="info-row">
+        <span class="label">IELTS Score</span>
+        <span class="value">
+          <span style="background:#ecfdf5; color:#15803d; border:1.5px solid #86efac; padding:2px 10px; border-radius:8px; font-size:13px; font-weight:800;">{{ lead.ielts_score }}</span>
+        </span>
+      </div>
+      {% endif %}
+
+      {% if lead.ielts_planned_date %}
+      <div class="info-row">
+        <span class="label">IELTS Planned</span>
+        <span class="value">{{ lead.ielts_planned_date.strftime('%d %b %Y') if lead.ielts_planned_date else '—' }}</span>
+      </div>
+      {% endif %}
+
+      {% if lead.competitor_consulted %}
+      <div class="info-row">
+        <span class="label">Competitor Consulted</span>
+        <span class="value" style="color:#b45309;">⚡ {{ lead.competitor_consulted }}</span>
+      </div>
+      {% endif %}
+
+      {% if lead.referral_name %}
+      <div class="info-row">
+        <span class="label">Referred By</span>
+        <span class="value" style="color:#7c3aed;">🌟 {{ lead.referral_name }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if lead.closed_reason and lead.lead_status in ('Closed - Lost', 'Not Interested', 'Disqualified') %}
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #f1f5f9;">
+      <p class="section-label" style="margin-bottom:10px; color:#b91c1c;">🔴 Closure Reason</p>
+      <div class="info-row">
+        <span class="label">Primary Reason</span>
+        <span class="value" style="color:#dc2626;">{{ lead.closed_reason }}</span>
+      </div>
+      {% if lead.closed_reason_detail %}
+      <div class="info-row">
+        <span class="label">Details</span>
+        <span class="value" style="color:#64748b; font-weight:500; font-size:13px; text-align:right; word-break:break-word;">{{ lead.closed_reason_detail }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if current_course %}
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #f1f5f9;">
+      <p class="section-label" style="margin-bottom:10px;">📘 Selected Course</p>
+      <div class="info-row">
+        <span class="label">Course</span>
+        <span class="value" style="color:#4f46e5;">{{ current_course.course_name }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Course Fee</span>
+        <span class="value" style="color:#16a34a;">₹{{ "%.0f"|format(current_course.course_fee) }}</span>
+      </div>
+      {% if current_course.course_details_1_link or current_course.course_details_2_link %}
+      <div class="info-row">
+        <span class="label">Course Links</span>
+        <span style="display:flex; gap:8px;">
+          {% if current_course.course_details_1_link %}
+          <a href="{{ current_course.course_details_1_link }}" target="_blank" style="color:#6366f1; font-size:13px; font-weight:600; text-decoration:none;">↗ Link 1</a>
+          {% endif %}
+          {% if current_course.course_details_2_link %}
+          <a href="{{ current_course.course_details_2_link }}" target="_blank" style="color:#6366f1; font-size:13px; font-weight:600; text-decoration:none;">↗ Link 2</a>
+          {% endif %}
+        </span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if (lead.lead_value and lead.lead_value > 0) or (lead.registration_amount and lead.registration_amount > 0) %}
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #f1f5f9;">
+      <p class="section-label" style="margin-bottom:10px;">💰 Financials</p>
+      {% if lead.lead_value and lead.lead_value > 0 %}
+      <div class="info-row">
+        <span class="label">Lead Value</span>
+        <span class="value" style="color:#2563eb;">₹{{ "%.0f"|format(lead.lead_value) }}</span>
+      </div>
+      {% endif %}
+      {% if lead.registration_amount and lead.registration_amount > 0 %}
+      <div class="info-row">
+        <span class="label">Registration Paid</span>
+        <span class="value" style="color:#16a34a;">₹{{ "%.0f"|format(lead.registration_amount) }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- ═══════════════ PIPELINE STATUS ═══════════════ -->
+<div class="card fade-in" style="animation-delay:0.14s">
+  <p class="section-label">🔄 Lead Pipeline</p>
+  <p style="font-size:13px; color:#64748b; margin:-8px 0 16px; font-weight:500;">Click any stage to update where this lead is right now.</p>
+
+  <!-- Status buttons + current badge — single HTMX swap target -->
+  <div id="status-buttons">
+    {% include 'partials/status_buttons.html' %}
+  </div>
+
+  <!-- Financial & course form -->
+  <div style="margin-top:24px; padding-top:20px; border-top:1px solid #f1f5f9;">
+    <p class="section-label" style="margin-bottom:14px;">💳 Update Financial & Course Details</p>
+    <form method="POST" action="{{ url_for('update_lead_details', lead_id=lead.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="lead_status" value="{{ lead.lead_status }}">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:16px;">
+        <div>
+          <label class="form-label">Lead Value (₹)</label>
+          <input type="number" step="0.01" name="lead_value" value="{{ lead.lead_value }}" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Registration Amount (₹)</label>
+          <input type="number" step="0.01" name="registration_amount" value="{{ lead.registration_amount }}" class="form-input">
+        </div>
+        <div>
+          <label class="form-label">Select Course</label>
+          <select name="course_id" id="courseSelect" class="form-input" style="cursor:pointer;">
+            <option value="">No course selected</option>
+            {% for course in all_courses %}
+            <option value="{{ course.id }}" data-fee="{{ course.course_fee }}"
+                {% if lead.course_id == course.id %}selected{% endif %}>
+              {{ course.course_name }} — ₹{{ "%.0f"|format(course.course_fee) }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════ ACTIONS ═══════════════ -->
+<div class="card fade-in" style="animation-delay:0.18s">
+  <p class="section-label">⚙️ Actions</p>
+  <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+
+    {% if session.role == 'super_admin' or lead.assigned_user_id == session.user_id %}
+    <a href="{{ url_for('edit_lead', lead_id=lead.id) }}" class="action-btn btn-edit">
+      ✏️ Edit Profile
+    </a>
+    {% endif %}
+
+    <!-- TIER 4: Send Student Portal Link -->
+    {% if session.role == 'super_admin' or lead.assigned_user_id == session.user_id %}
+    <button type="button"
+            style="background:#f0fdf4; color:#166534; border-color:#86efac;"
+            class="action-btn"
+            hx-post="{{ url_for('generate_portal_link', lead_id=lead.id) }}"
+            hx-target="#modal-container"
+            hx-swap="innerHTML"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+      🔗 Student Portal Link
+    </button>
+    {% endif %}
+
+    {% if session.role == 'super_admin' %}
+    <button type="button" class="action-btn btn-reassign"
+            hx-get="/leads/{{ lead.id }}/reassign"
+            hx-target="#modal-container"
+            hx-swap="innerHTML">
+      👤 Reassign Lead
+    </button>
+    <button type="button" class="action-btn btn-delete"
+            hx-get="/leads/{{ lead.id }}/delete"
+            hx-target="#modal-container"
+            hx-swap="innerHTML">
+      🗑️ Delete Lead
+    </button>
+    {% endif %}
+
+  </div>
+  <p style="font-size:12px; color:#94a3b8; background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:10px 14px;">
+    🔒
+    {% if session.role == 'super_admin' %}
+      All changes are logged in the audit trail.
+    {% else %}
+      You can update status and financial fields. All changes are recorded.
+    {% endif %}
+  </p>
+</div>
+
+<!-- ═══════════════ DOCUMENTS ═══════════════ -->
+<div class="card fade-in" style="animation-delay:0.21s">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+    <p class="section-label" style="margin:0;">📂 Documents</p>
+    <span style="font-size:13px; font-weight:700; background:#f1f5f9; color:#475569; padding:4px 12px; border-radius:20px;">{{ documents|length }} file{{ 's' if documents|length != 1 }}</span>
+  </div>
+
+  <!-- Upload form -->
+  <form method="POST" action="{{ url_for('add_document', lead_id=lead.id) }}"
+        style="margin-bottom:20px; padding:16px; background:#f8fafc; border:1.5px dashed #e2e8f0; border-radius:14px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <p style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 12px;">Add a new document</p>
+    <div style="display:grid; grid-template-columns:1fr 2fr auto; gap:10px; align-items:end;">
+      <div>
+        <label class="form-label">Type</label>
+        <select name="document_name" required class="form-input" style="cursor:pointer;">
+          <option value="">Choose type…</option>
+          <option value="Passport">Passport</option>
+          <option value="SOP">SOP</option>
+          <option value="LOR">LOR</option>
+          <option value="Academic Transcripts">Academic Transcripts</option>
+          <option value="IELTS/TOEFL">IELTS/TOEFL Score</option>
+          <option value="Resume/CV">Resume/CV</option>
+          <option value="Financial Documents">Financial Documents</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Link (Google Drive, etc.)</label>
+        <input type="url" name="document_link" required placeholder="https://drive.google.com/…" class="form-input">
+      </div>
+      <div>
+        <button type="submit" class="btn-indigo" style="white-space:nowrap;">+ Add</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Document list -->
+  {% if documents %}
+    {% for doc in documents %}
+    <div class="doc-card">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; background:#eff6ff; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📄</div>
+        <div>
+          <p style="font-weight:700; font-size:14px; color:#0f172a; margin:0 0 2px;">{{ doc.document_name }}</p>
+          <p style="font-size:11px; color:#94a3b8; margin:0;">Uploaded {{ doc.uploaded_at|ddmmyyyy }}</p>
+        </div>
+      </div>
+      <a href="{{ doc.document_link }}" target="_blank"
+         style="display:inline-flex; align-items:center; gap:6px; background:#6366f1; color:#fff; padding:8px 16px; border-radius:10px; font-size:12px; font-weight:700; text-decoration:none; white-space:nowrap; transition:background 0.15s;"
+         onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">
+        View ↗
+      </a>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="empty-state">
+    📂 No documents uploaded yet.<br>
+    <span style="font-size:12px; color:#cbd5e1;">Add the student's documents above to keep everything in one place.</span>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ═══════════════ INTERACTIONS / NOTES ═══════════════ -->
+<div class="card fade-in" style="animation-delay:0.24s">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+    <p class="section-label" style="margin:0;">💬 Interaction Notes</p>
+    <span style="font-size:13px; font-weight:700; background:#f1f5f9; color:#475569; padding:4px 12px; border-radius:20px;">{{ interactions|length }} note{{ 's' if interactions|length != 1 }}</span>
+  </div>
+
+  <!-- Add note form -->
+  <form method="POST" action="{{ url_for('add_interaction', lead_id=lead.id) }}"
+        style="margin-bottom:20px; padding:16px; background:#f8fafc; border:1.5px dashed #e2e8f0; border-radius:14px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <p style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 14px;">Log an interaction</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+      <div>
+        <label class="form-label">📞 How did you contact them?</label>
+        <select name="interaction_type" required class="form-input" style="cursor:pointer;">
+          <option value="Call">📞 Call</option>
+          <option value="WhatsApp">💬 WhatsApp</option>
+          <option value="Email">📧 Email</option>
+          <option value="Meeting">🤝 In-Person Meeting</option>
+          <option value="Walk-in">🚶 Walk-in</option>
+          <option value="Video Call">🎥 Video Call</option>
+          <option value="Other">📌 Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">🎯 What was the outcome?</label>
+        <select name="interaction_outcome" required class="form-input" style="cursor:pointer;">
+          <option value="Interested">🔥 Interested — wants to proceed</option>
+          <option value="Needs Follow-up" selected>📅 Needs Follow-up</option>
+          <option value="Requested Docs">📄 Requested Documents</option>
+          <option value="Price Objection">💰 Price Objection</option>
+          <option value="Visa Concern">🛂 Visa Concern</option>
+          <option value="Committed">🎉 Committed / Ready to Register</option>
+          <option value="Ghost">👻 No Response / Ghost</option>
+          <option value="Called Back Later">🔁 Called Back Later</option>
+          <option value="Other">📌 Other</option>
+        </select>
+      </div>
+    </div>
+    <label class="form-label">📝 What happened? (notes)</label>
+    <textarea name="note" required rows="3" placeholder="e.g. Called the student — they're interested in September intake. Will send brochure tomorrow."
+              style="width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:14px; font-family:'Plus Jakarta Sans',sans-serif; resize:vertical; background:#fff; color:#0f172a; outline:none; transition:border-color 0.15s; box-sizing:border-box; margin-bottom:12px;"
+              onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+    <button type="submit" class="btn-indigo">Log Interaction</button>
+  </form>
+
+  <!-- Notes list -->
+  {% if interactions %}
+    {% for interaction in interactions %}
+    <div class="note-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #f1f5f9;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <div style="width:30px; height:30px; background:#e0e7ff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#4f46e5; flex-shrink:0;">
+            {{ interaction.user_name[0]|upper if interaction.user_name else '?' }}
+          </div>
+          <span style="font-weight:700; font-size:14px; color:#0f172a;">{{ interaction.user_name }}</span>
+          {% if interaction.interaction_type %}
+          <span style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;">
+            {% if interaction.interaction_type == 'Call' %}📞
+            {% elif interaction.interaction_type == 'WhatsApp' %}💬
+            {% elif interaction.interaction_type == 'Email' %}📧
+            {% elif interaction.interaction_type == 'Meeting' %}🤝
+            {% elif interaction.interaction_type == 'Walk-in' %}🚶
+            {% elif interaction.interaction_type == 'Video Call' %}🎥
+            {% else %}📌{% endif %}
+            {{ interaction.interaction_type }}
+          </span>
+          {% endif %}
+          {% if interaction.interaction_outcome %}
+          <span style="
+            padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;
+            {% if interaction.interaction_outcome == 'Interested' %}background:#dcfce7; color:#166534; border:1px solid #86efac;
+            {% elif interaction.interaction_outcome == 'Committed' %}background:#fef9c3; color:#854d0e; border:1px solid #fde68a;
+            {% elif interaction.interaction_outcome in ('Ghost', 'Price Objection', 'Visa Concern') %}background:#fee2e2; color:#991b1b; border:1px solid #fecaca;
+            {% elif interaction.interaction_outcome == 'Requested Docs' %}background:#f3e8ff; color:#7e22ce; border:1px solid #d8b4fe;
+            {% else %}background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;{% endif %}
+          ">{{ interaction.interaction_outcome }}</span>
+          {% endif %}
+        </div>
+        <span style="font-size:11px; color:#94a3b8; font-weight:600; white-space:nowrap; flex-shrink:0;">{{ interaction.contact_date }}</span>
+      </div>
+      <p style="font-size:14px; color:#374151; line-height:1.65; margin:0; word-break:break-word;">{{ interaction.interaction_note }}</p>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="empty-state">
+    💬 No notes yet.<br>
+    <span style="font-size:12px; color:#cbd5e1;">Add your first interaction note above to track progress.</span>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ═══════════════ FOLLOW-UPS ═══════════════ -->
+<div class="card fade-in" style="animation-delay:0.27s">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+    <p class="section-label" style="margin:0;">📅 Follow-ups</p>
+    {% if followups %}
+    <span style="font-size:13px; font-weight:700; background:#f1f5f9; color:#475569; padding:4px 12px; border-radius:20px;">{{ followups|length }} scheduled</span>
+    {% endif %}
+  </div>
+
+  <!-- Schedule form -->
+  <form method="POST" action="{{ url_for('add_followup', lead_id=lead.id) }}"
+        style="margin-bottom:20px; padding:16px; background:#f8fafc; border:1.5px dashed #e2e8f0; border-radius:14px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <p class="form-label" style="margin-bottom:12px;">Schedule a reminder to follow up</p>
+    <div style="display:grid; grid-template-columns:1fr 2fr auto; gap:10px; align-items:end;">
+      <div>
+        <label class="form-label">Date</label>
+        <input type="date" name="followup_date" required class="form-input">
+      </div>
+      <div>
+        <label class="form-label">Note (optional)</label>
+        <input type="text" name="note" placeholder="e.g. Send updated brochure" class="form-input">
+      </div>
+      <div>
+        <button type="submit" class="btn-green" style="white-space:nowrap;">+ Schedule</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Follow-up list -->
+  {% if followups %}
+    {% for followup in followups %}
+    <div class="followup-card">
+      <div style="display:flex; align-items:flex-start; gap:12px;">
+        <div style="width:38px; height:38px; flex-shrink:0; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;
+            background:{{ '#dcfce7' if followup.completed else '#eff6ff' }};">
+          {{ '✅' if followup.completed else '📅' }}
+        </div>
+        <div>
+          <p style="font-weight:800; font-size:14px; color:#0f172a; margin:0 0 3px;">{{ followup.followup_date|ddmmyyyy }}</p>
+          <p style="font-size:13px; color:#64748b; margin:0 0 3px;">{{ followup.note or 'No note added' }}</p>
+          <p style="font-size:11px; color:#94a3b8; margin:0;">by {{ followup.user_name }}</p>
+        </div>
+      </div>
+
+      {% if followup.completed %}
+      <span style="display:inline-flex; align-items:center; gap:6px; background:#dcfce7; color:#166534; border:1.5px solid #86efac; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; white-space:nowrap;">
+        ✓ Done
+      </span>
+      {% else %}
+      <form method="POST" action="{{ url_for('complete_followup', followup_id=followup.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit"
+                style="background:#f1f5f9; color:#475569; border:1.5px solid #e2e8f0; padding:8px 16px; border-radius:10px; font-size:12px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; transition:all 0.15s; white-space:nowrap;"
+                onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+          Mark Done ✓
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="empty-state">
+    📅 No follow-ups scheduled.<br>
+    <span style="font-size:12px; color:#cbd5e1;">Plan your next step above to stay on top of this lead.</span>
+  </div>
+  {% endif %}
+</div>
+
+<!-- HTMX modal container -->
+<div id="modal-container"></div>
+
+<!-- Course fee auto-fill (unchanged) -->
+<script>
+(function() {
+    var sel = document.getElementById('courseSelect');
+    var feeInput = document.querySelector('input[name="lead_value"]');
+    if (!sel || !feeInput) return;
+    function applyFee(opt) {
+        var fee = opt ? opt.getAttribute('data-fee') : null;
+        if (fee && parseFloat(fee) > 0) {
+            feeInput.value = parseFloat(fee).toFixed(2);
+        }
+    }
+    sel.addEventListener('change', function() {
+        applyFee(this.options[this.selectedIndex]);
+    });
+    var initial = sel.options[sel.selectedIndex];
+    var v = feeInput.value;
+    if (initial && initial.value && (v === '' || v === '0' || v === '0.00' || parseFloat(v) === 0)) {
+        applyFee(initial);
+    }
+})();
+</script>
+
+{% endblock %}

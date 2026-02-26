@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Lead Source Report{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{{ url_for('reports') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">&larr; Back to Reports</a>
+</div>
+
+<h1 class="text-3xl font-bold mb-4 text-gray-900">Lead Source Performance Report</h1>
+<div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-8">
+    <p class="text-blue-800 text-sm"><strong>Report Period:</strong> {{ date_range_display }}</p>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-6">
+    <h2 class="text-lg font-semibold mb-4 text-gray-800">Select Report Period</h2>
+    <form method="GET" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        {% set periods = ['daily', 'weekly', 'monthly', 'yearly'] %}
+        {% for p in periods %}
+        <button type="submit" name="period" value="{{ p }}" 
+            class="px-4 py-2.5 text-sm font-medium rounded-lg border {% if period == p or (not period and p == 'monthly') %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-slate-700 border-slate-300 hover:bg-slate-50{% endif %}">
+            {{ p|capitalize }}
+        </button>
+        {% endfor %}
+        <button type="button"
+            hx-get="/modal/custom-date"
+            hx-target="#modal-container"
+            hx-swap="innerHTML"
+            class="px-4 py-2.5 text-sm font-medium rounded-lg border {% if period == 'custom' %}bg-blue-600 text-white border-blue-600{% else %}bg-white text-slate-700 border-slate-300 hover:bg-slate-50{% endif %}">
+            Custom Range
+        </button>
+    </form>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-slate-200 mb-8">
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-4 rounded-t-lg">
+        <h2 class="text-xl font-bold">📊 Lead Source Performance</h2>
+        <p class="text-sm text-green-100">Ranked by conversion rate</p>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-600">Rank</th>
+                    <th class="px-4 py-3 text-left font-semibold text-slate-600">Lead Source</th>
+                    <th class="px-4 py-3 text-center font-semibold text-slate-600">Total Leads</th>
+                    <th class="px-4 py-3 text-center font-semibold text-slate-600">Contacted</th>
+                    <th class="px-4 py-3 text-center font-semibold text-slate-600">Interested</th>
+                    <th class="px-4 py-3 text-center font-semibold text-slate-600">Won</th>
+                    <th class="px-4 py-3 text-center font-semibold text-slate-600">Conversion %</th>
+                    <th class="px-4 py-3 text-center font-semibold text-slate-600">Hot Leads</th>
+                    <th class="px-4 py-3 text-center font-semibold text-slate-600">Revenue</th>
+                    <th class="px-4 py-3 text-center font-semibold text-slate-600">Avg Score</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+                {% for source in source_stats %}
+                <tr class="{% if loop.index <= 3 %}bg-green-50{% else %}hover:bg-slate-50{% endif %}">
+                    <td class="px-4 py-4 text-center font-bold text-base">
+                        {% if loop.index == 1 %}
+                            <span class="text-green-600">🥇 1</span>
+                        {% elif loop.index == 2 %}
+                            <span class="text-blue-600">🥈 2</span>
+                        {% elif loop.index == 3 %}
+                            <span class="text-orange-600">🥉 3</span>
+                        {% else %}
+                            {{ loop.index }}
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-4 font-semibold text-gray-900">{{ source.source }}</td>
+                    <td class="px-4 py-4 text-center font-medium">{{ source.total_leads }}</td>
+                    <td class="px-4 py-4 text-center">
+                        {{ source.contacted_leads }}
+                        <p class="text-xs text-slate-500">{{ "%.0f"|format(source.contact_rate) }}%</p>
+                    </td>
+                    <td class="px-4 py-4 text-center text-blue-700 font-medium">{{ source.interested_leads }}</td>
+                    <td class="px-4 py-4 text-center font-bold text-green-700">{{ source.won_leads }}</td>
+                    <td class="px-4 py-4 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold {% if source.conversion_rate >= 20 %}bg-green-100 text-green-800{% elif source.conversion_rate >= 10 %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ "%.1f"|format(source.conversion_rate) }}%
+                        </span>
+                    </td>
+                    <td class="px-4 py-4 text-center text-red-700 font-semibold">{{ source.hot_leads }}</td>
+                    <td class="px-4 py-4 text-center font-bold text-green-700">₹{{ "%.0f"|format(source.total_revenue) }}</td>
+                    <td class="px-4 py-4 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold {% if source.avg_score >= 60 %}bg-green-100 text-green-800{% elif source.avg_score >= 40 %}bg-yellow-100 text-yellow-800{% else %}bg-slate-100 text-slate-800{% endif %}">
+                            {{ "%.0f"|format(source.avg_score) }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="px-4 py-12 text-center text-slate-500 text-sm">No lead source data available for this period</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if source_stats %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    {% set insights = [
+        {'title': 'Best Performing Source', 'icon': '🏆', 'color': 'text-green-600', 'value': source_stats[0].source, 'sub': "%.1f"|format(source_stats[0].conversion_rate) ~ '% conversion'},
+        {'title': 'Highest Revenue Source', 'icon': '💰', 'color': 'text-blue-600', 'value': source_stats|sort(attribute='total_revenue', reverse=True)|first|attr('source'), 'sub': '₹' ~ "%.0f"|format(source_stats|sort(attribute='total_revenue', reverse=True)|first|attr('total_revenue'))},
+        {'title': 'Highest Volume Source', 'icon': '📈', 'color': 'text-purple-600', 'value': source_stats|sort(attribute='total_leads', reverse=True)|first|attr('source'), 'sub': source_stats|sort(attribute='total_leads', reverse=True)|first|attr('total_leads') ~ ' leads'}
+    ] %}
+    
+    {% for insight in insights %}
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <h3 class="text-base font-semibold mb-3 {{ insight.color }}">{{ insight.icon }} {{ insight.title }}</h3>
+        <p class="text-2xl font-bold text-gray-900 mb-1">{{ insight.value }}</p>
+        <p class="text-sm text-slate-600">{{ insight.sub }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+    <h2 class="text-lg font-semibold mb-5 text-gray-800">💡 Marketing Recommendations</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="border border-green-200 rounded-lg p-4 bg-green-50/50">
+            <h3 class="font-semibold mb-3 text-green-800">✅ Focus More On:</h3>
+            <ul class="space-y-2 text-sm">
+                {% for source in source_stats[:3] %}
+                <li class="flex items-start">
+                    <span class="text-green-600 mr-2">•</span>
+                    <span class="text-slate-700"><strong>{{ source.source }}:</strong> {{ "%.1f"|format(source.conversion_rate) }}% conversion, ₹{{ "%.0f"|format(source.total_revenue) }} revenue</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="border border-orange-200 rounded-lg p-4 bg-orange-50/50">
+            <h3 class="font-semibold mb-3 text-orange-800">⚠️ Needs Improvement:</h3>
+            <ul class="space-y-2 text-sm">
+                {% for source in source_stats[-3:] %}
+                {% if source.conversion_rate < 10 %}
+                <li class="flex items-start">
+                    <span class="text-orange-600 mr-2">•</span>
+                    <span class="text-slate-700"><strong>{{ source.source }}:</strong> Only {{ "%.1f"|format(source.conversion_rate) }}% conversion - optimize or reduce spend</span>
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div id="modal-container"></div>
+
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Users Management{% endblock %}
+
+{% block content %}
+<div class="max-w-[1600px] mx-auto p-4 sm:p-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Users Management</h1>
+        <a href="{{ url_for('add_user') }}" class="bg-blue-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 text-center text-sm sm:text-base transition">
+            + Add New User
+        </a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                        <th class="px-4 sm:px-6 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">Name</th>
+                        <th class="px-4 sm:px-6 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">Email</th>
+                        <th class="px-4 sm:px-6 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">Role</th>
+                        <th class="px-4 sm:px-6 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">Created</th>
+                        <th class="px-4 sm:px-6 py-3 text-left font-semibold text-slate-700 uppercase tracking-wider text-xs">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for user in users %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 sm:px-6 py-4 text-slate-900 font-medium">{{ user.name }}</td>
+                        <td class="px-4 sm:px-6 py-4 text-slate-600">{{ user.email }}</td>
+                        <td class="px-4 sm:px-6 py-4">
+                            <span class="px-2.5 py-1 text-xs font-medium rounded-full {% if user.role == 'super_admin' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %} whitespace-nowrap">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-4 text-slate-600 whitespace-nowrap">{{ user.created_at|ddmmyyyy }}</td>
+                        <td class="px-4 sm:px-6 py-4">
+                            {% if user.id != session.user_id %}
+                            <div class="flex gap-2">
+                                <a href="{{ url_for('edit_user', user_id=user.id) }}" class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition whitespace-nowrap">
+                                    Edit
+                                </a>
+                                <button class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-100 transition whitespace-nowrap">
+                                    Delete
+                                </button>
+                            </div>
+                            {% else %}
+                            <span class="text-slate-400 text-xs font-medium">Current User</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                            <div class="flex flex-col items-center">
+                                <span class="text-4xl mb-2">👥</span>
+                                No users found
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+        <h3 class="text-xl font-bold mb-3 text-slate-900">Confirm Delete</h3>
+        <p class="mb-4 text-slate-600">Are you sure you want to delete user <strong id="userName" class="text-slate-900"></strong>?</p>
+        <p class="mb-4 text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">Enter your password to confirm this action. This cannot be undone.</p>
+        
+        <form id="deleteForm" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="password" name="password" required class="w-full px-4 py-2 border border-slate-300 rounded-lg mb-4 focus:ring-2 focus:ring-red-300 focus:border-red-500" placeholder="Your password">
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 bg-red-600 text-white py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">Delete</button>
+                <button type="button" class="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-lg font-semibold hover:bg-slate-200 transition">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
