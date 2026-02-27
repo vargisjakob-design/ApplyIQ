@@ -6,7 +6,7 @@ This application manages leads for multiple study abroad consultancies.
 Each company has its own database and users cannot see other companies' data.
 """
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta, date
 from functools import wraps
@@ -1246,41 +1246,6 @@ def update_lead_scores_bulk(lead_ids, company_id, scores_dict):
     conn.commit()
     release_db_connection(conn)
 
-def get_lead_scores_bulk(lead_ids, company_id):
-    """
-    Get lead scores from database, calculate missing ones
-    Returns: {lead_id: (score, category)}
-    """
-    if not lead_ids:
-        return {}
-    
-    conn = get_company_db(company_id)
-    cursor = conn.cursor()
-    
-    # Get existing scores
-    cursor.execute("""
-        SELECT id, score, score_category 
-        FROM leads 
-        WHERE id = ANY(%s) AND company_id = %s
-    """, (lead_ids, company_id))
-    
-    existing_scores = {row['id']: (row['score'], row['score_category']) for row in cursor.fetchall()}
-    release_db_connection(conn)
-    
-    # Find missing scores and calculate them
-    missing_ids = [lid for lid in lead_ids if lid not in existing_scores or existing_scores[lid][0] is None]
-    
-    if missing_ids:
-        calculated_scores = calculate_lead_scores_bulk(missing_ids, company_id)
-        update_lead_scores_bulk(missing_ids, company_id, calculated_scores)
-        existing_scores.update(calculated_scores)
-    
-    return existing_scores
-
-# ============================================================================
-# BULK LEAD SCORING FUNCTION
-# ============================================================================
-
 def calculate_lead_scores_bulk(lead_ids, company_id=None):
     """
     Bulk scoring helper to avoid N+1 queries in list/report views.
@@ -2105,7 +2070,7 @@ def developer_reset_password(company_id):
             return render_template('developer_reset_password.html', company=company)
 
         # Update the super_admin user's password in the shared users table
-        conn = get_company_db()
+        conn = get_company_db(company_id)
         cursor = conn.cursor()
         cursor.execute(
             """UPDATE users SET password_hash = %s
@@ -3496,7 +3461,7 @@ def update_pipeline_probabilities():
 
 @app.route('/leads/import', methods=['GET', 'POST'])
 @login_required
-#@super_admin_required
+@super_admin_required
 def import_leads():
     """Import leads from CSV"""
     if request.method == 'POST':
@@ -4490,15 +4455,17 @@ def forecast_report():
         cursor.execute("""
             SELECT COUNT(*) as total
             FROM leads l
-            WHERE l.lead_status NOT IN ('Closed - Won', 'Closed - Lost', 'Not Interested', 'Disqualified')
-        """)
+            WHERE l.company_id = %s
+            AND l.lead_status NOT IN ('Closed - Won', 'Closed - Lost', 'Not Interested', 'Disqualified')
+        """, (session['company_id'],))
     else:
         cursor.execute("""
             SELECT COUNT(*) as total
             FROM leads l
-            WHERE l.assigned_user_id = %s 
+            WHERE l.company_id = %s
+            AND l.assigned_user_id = %s 
             AND l.lead_status NOT IN ('Closed - Won', 'Closed - Lost', 'Not Interested', 'Disqualified')
-        """, (session['user_id'],))
+        """, (session['company_id'], session['user_id']))
     
     total_result = cursor.fetchone()
     total_leads_count = total_result['total']
@@ -4514,12 +4481,14 @@ def forecast_report():
             LEFT JOIN (
                 SELECT lead_id, COUNT(*) as interaction_count 
                 FROM interactions 
+                WHERE company_id = %s
                 GROUP BY lead_id
             ) i ON l.id = i.lead_id
-            WHERE l.lead_status NOT IN ('Closed - Won', 'Closed - Lost', 'Not Interested', 'Disqualified')
+            WHERE l.company_id = %s
+            AND l.lead_status NOT IN ('Closed - Won', 'Closed - Lost', 'Not Interested', 'Disqualified')
             ORDER BY l.created_at DESC
             LIMIT %s OFFSET %s
-        """, (per_page, offset))
+        """, (session['company_id'], session['company_id'], per_page, offset))
     else:
         cursor.execute("""
             SELECT l.*, u.name as assigned_user_name, u.id as user_id,
@@ -4529,13 +4498,15 @@ def forecast_report():
             LEFT JOIN (
                 SELECT lead_id, COUNT(*) as interaction_count 
                 FROM interactions 
+                WHERE company_id = %s
                 GROUP BY lead_id
             ) i ON l.id = i.lead_id
-            WHERE l.assigned_user_id = %s 
+            WHERE l.company_id = %s
+            AND l.assigned_user_id = %s 
             AND l.lead_status NOT IN ('Closed - Won', 'Closed - Lost', 'Not Interested', 'Disqualified')
             ORDER BY l.created_at DESC
             LIMIT %s OFFSET %s
-        """, (session['user_id'], per_page, offset))
+        """, (session['company_id'], session['company_id'], session['user_id'], per_page, offset))
     
     active_leads = cursor.fetchall()
     
@@ -6135,7 +6106,6 @@ def priority_leads_api():
     leads = cursor.fetchall()
     release_db_connection(conn)
 
-    from flask import jsonify
     result = []
     for lead in leads:
         result.append({
@@ -6317,7 +6287,6 @@ def notifications_page():
 @login_required
 def notifications_api():
     """Return recent unread notifications as JSON for the navbar dropdown."""
-    from flask import jsonify
     conn = get_company_db(session['company_id'])
     cursor = conn.cursor()
     cursor.execute("""
@@ -6361,7 +6330,6 @@ def mark_all_notifications_read():
     )
     conn.commit()
     release_db_connection(conn)
-    from flask import jsonify
     return jsonify({'ok': True})
 
 
@@ -6763,20 +6731,6 @@ def bulk_delete_leads():
 # ============================================================================
 # TIER 5 — OPTION 3: INCENTIVE TARGETS
 # ============================================================================
-
-def _get_active_target(company_id):
-    """Return the single active incentive target for a company, or None."""
-    conn = get_company_db(company_id)
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT * FROM incentive_targets
-        WHERE company_id = %s AND is_active = TRUE
-        ORDER BY created_at DESC LIMIT 1
-    """, (company_id,))
-    target = cursor.fetchone()
-    release_db_connection(conn)
-    return target
-
 
 def _get_tiers_for_target(target_id, company_id):
     """Return incentive tiers for a target, ordered by threshold ascending."""
