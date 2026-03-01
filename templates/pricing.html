@@ -25,690 +25,1203 @@
   ],"featureList":"Lead Pipeline, Intake Alerts, Counsellor Reports, Revenue Forecast, WhatsApp Templates, Activity Heatmap, AI Lead Scoring, CSV Import"}
   </script>
 
-  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&family=Libre+Franklin:wght@300;400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
   <style>
-    html { scroll-behavior: smooth; }
-    body { font-family: 'DM Sans', sans-serif; background: #f8fafc; color: #0f172a; }
-    .sora { font-family: 'Sora', sans-serif; }
-
-    /* ── Nav ── */
-    .nav-blur { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
-    #mob-menu { max-height: 0; overflow: hidden; transition: max-height .32s ease; }
-    #mob-menu.open { max-height: 640px; }
-
-    /* ── Hero gradient ── */
-    .hero-glow { background: radial-gradient(ellipse 90% 60% at 50% 0%, #dbeafe 0%, #e0f2fe 28%, #f8fafc 65%); }
-
-    /* ── Gradient text ── */
-    @keyframes flow { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-    .text-gradient {
-      background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 40%, #0284c7 70%, #38bdf8 100%);
-      background-size: 200% 200%;
-      animation: flow 4s ease infinite;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    /* ══════════════════════════════════════════════════
+       WSJ DESIGN SYSTEM — mirrors landing.html
+    ══════════════════════════════════════════════════ */
+    :root {
+      --ink:        #111111;
+      --ink-soft:   #444444;
+      --ink-muted:  #767676;
+      --rule:       #CCCCCC;
+      --rule-dark:  #333333;
+      --bg:         #FFFFFF;
+      --bg-warm:    #F8F6F1;
+      --bg-dark:    #111111;
+      --accent:     #004B87;
+      --accent-r:   #B5121B;
+      --accent-lt:  #E8F0F7;
+      --serif:      'Playfair Display', Georgia, 'Times New Roman', serif;
+      --sans:       'Libre Franklin', Helvetica, Arial, sans-serif;
+      --baskerville:'Libre Baskerville', Georgia, serif;
     }
 
-    /* ── Cards ── */
-    .card-lift { transition: transform .22s ease, box-shadow .22s ease; }
-    .card-lift:hover { transform: translateY(-5px); box-shadow: 0 20px 50px -12px rgba(14,165,233,.22); }
-    .card-dark { background: linear-gradient(150deg, #0c4a6e 0%, #0369a1 55%, #0284c7 100%); }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html  { scroll-behavior: smooth; }
+    body  { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
 
-    /* ── Badge pulse ── */
-    @keyframes badge-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.5)} 50%{box-shadow:0 0 0 7px rgba(251,191,36,0)} }
-    .badge-pulse { animation: badge-pulse 2.4s ease-in-out infinite; }
+    /* ── Typography ── */
+    .display-xl  { font-family: var(--serif); font-size: clamp(2.4rem,6vw,5.5rem); font-weight:800; line-height:1.0; letter-spacing:-.02em; }
+    .display-lg  { font-family: var(--serif); font-size: clamp(1.9rem,4vw,3.6rem); font-weight:700; line-height:1.08; letter-spacing:-.01em; }
+    .display-md  { font-family: var(--serif); font-size: clamp(1.4rem,2.5vw,2.2rem); font-weight:700; line-height:1.18; }
+    .display-sm  { font-family: var(--serif); font-size: clamp(1.1rem,1.8vw,1.5rem); font-weight:600; line-height:1.25; }
+    .kicker      { font-family: var(--sans); font-size:.65rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-r); }
+    .kicker-blue { font-family: var(--sans); font-size:.65rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
+    .deck        { font-family: var(--baskerville); font-size:clamp(1rem,1.5vw,1.2rem); line-height:1.7; color:var(--ink-soft); font-weight:400; }
+    .body-copy   { font-family: var(--baskerville); font-size:.95rem; line-height:1.75; color:var(--ink-soft); }
+    .fine-print  { font-family: var(--sans); font-size:.7rem; color:var(--ink-muted); }
+
+    /* ── Layout ── */
+    .container      { max-width:1240px; margin:0 auto; padding:0 1.25rem; }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display:inline-flex; align-items:center; gap:.5rem;
+      background:var(--ink); color:#fff;
+      font-family:var(--sans); font-size:.72rem; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase; text-decoration:none;
+      padding:.85rem 1.6rem; border:2px solid var(--ink);
+      transition:background .15s, color .15s, border-color .15s;
+    }
+    .btn-primary:hover { background:var(--accent); border-color:var(--accent); }
+    .btn-secondary {
+      display:inline-flex; align-items:center; gap:.5rem;
+      background:transparent; color:var(--ink);
+      font-family:var(--sans); font-size:.72rem; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase; text-decoration:none;
+      padding:.85rem 1.6rem; border:2px solid var(--ink);
+      transition:background .15s;
+    }
+    .btn-secondary:hover { background:var(--bg-warm); }
+    .btn-inverse {
+      display:inline-flex; align-items:center; gap:.5rem;
+      background:#fff; color:var(--ink);
+      font-family:var(--sans); font-size:.72rem; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase; text-decoration:none;
+      padding:.9rem 1.75rem; border:2px solid #fff;
+      transition:background .15s, color .15s, border-color .15s;
+    }
+    .btn-inverse:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .btn-outline-white {
+      display:inline-flex; align-items:center; gap:.5rem;
+      background:transparent; color:#fff;
+      font-family:var(--sans); font-size:.72rem; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase; text-decoration:none;
+      padding:.85rem 1.6rem; border:2px solid rgba(255,255,255,.45);
+      transition:border-color .15s;
+    }
+    .btn-outline-white:hover { border-color:#fff; }
+
+    /* ── Section structure ── */
+    .wsj-section { padding:3.5rem 0; }
+    .section-head {
+      display:flex; align-items:baseline; gap:1.5rem;
+      margin-bottom:2rem; padding-bottom:.5rem;
+      border-bottom:3px solid var(--ink);
+    }
+    .section-head-title { font-family:var(--sans); font-size:.65rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+    .section-head-rule  { flex:1; height:1px; background:var(--rule); }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      background:var(--bg-dark); color:#fff;
+      font-family:var(--sans); font-size:.7rem; letter-spacing:.04em;
+      padding:.35rem 0; text-align:center;
+    }
+    .top-bar a { color:#ccc; text-decoration:none; margin:0 .8rem; transition:color .15s; }
+    .top-bar a:hover { color:#fff; }
+
+    /* ── NAV ── */
+    .wsj-nav {
+      position:sticky; top:0; z-index:100;
+      background:var(--bg); border-bottom:3px solid var(--ink);
+    }
+    .nav-inner {
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+      padding:.85rem 1.25rem; max-width:1240px; margin:0 auto;
+    }
+    .nav-logo { display:flex; flex-direction:column; align-items:flex-start; text-decoration:none; gap:.15rem; }
+    .nav-logo-name { font-family:var(--serif); font-size:1.55rem; font-weight:800; color:var(--ink); letter-spacing:-.02em; line-height:1; }
+    .nav-logo-name span { color:var(--accent); }
+    .nav-logo-sub  { font-family:var(--sans); font-size:.55rem; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-muted); font-weight:600; }
+    .nav-links { display:none; align-items:center; }
+    @media(min-width:900px){ .nav-links { display:flex; } }
+    .nav-links a {
+      font-family:var(--sans); font-size:.8rem; font-weight:600; letter-spacing:.03em;
+      color:var(--ink); text-decoration:none;
+      padding:.45rem .9rem; border-right:1px solid var(--rule);
+      transition:background .12s, color .12s;
+    }
+    .nav-links a:first-child { border-left:1px solid var(--rule); }
+    .nav-links a:hover { background:var(--bg-warm); color:var(--accent); }
+    .nav-links a.nav-cta {
+      background:var(--ink); color:#fff; border-color:var(--ink);
+      padding:.45rem 1.1rem; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+    }
+    .nav-links a.nav-cta:hover { background:var(--accent); border-color:var(--accent); }
+    .nav-links a.nav-accent { color:var(--accent); font-weight:700; }
+    .nav-ham { display:flex; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:4px; }
+    .nav-ham span { display:block; width:24px; height:2px; background:var(--ink); }
+    @media(min-width:900px){ .nav-ham { display:none; } }
+    .mobile-menu { display:none; background:var(--bg); border-top:1px solid var(--rule); border-bottom:3px solid var(--ink); }
+    .mobile-menu.open { display:block; }
+    .mobile-menu a {
+      display:block; font-family:var(--sans); font-size:.9rem; font-weight:600;
+      color:var(--ink); text-decoration:none;
+      padding:.85rem 1.25rem; border-bottom:1px solid var(--rule);
+      transition:background .12s;
+    }
+    .mobile-menu a:hover { background:var(--bg-warm); }
+    .mobile-menu a.mob-cta {
+      background:var(--ink); color:#fff; text-align:center;
+      font-size:.78rem; letter-spacing:.08em; text-transform:uppercase;
+      margin:.75rem 1.25rem 0; border:none; padding:.9rem;
+    }
+    .mobile-menu a.mob-cta:hover { background:var(--accent); }
+    .mob-phone { text-align:center; padding:.65rem 1.25rem 1rem; font-family:var(--sans); font-size:.78rem; font-weight:700; }
+
+    /* ── DATELINE ── */
+    .dateline-bar {
+      background:var(--bg-warm); border-bottom:1px solid var(--rule);
+      padding:.4rem 1.25rem;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+      max-width:1240px; margin:0 auto;
+    }
+    .dateline-bar .dl-left,
+    .dateline-bar .dl-right {
+      font-family:var(--sans); font-size:.65rem; letter-spacing:.07em;
+      text-transform:uppercase; color:var(--ink-muted); font-weight:600;
+    }
+
+    /* ══════════════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════════════ */
+    .hero-section {
+      padding:3rem 0 2.5rem;
+      border-bottom:3px double var(--ink);
+      background:var(--bg);
+    }
+    .section-stamp {
+      display:inline-block; border:1.5px solid var(--accent-r);
+      color:var(--accent-r); font-family:var(--sans); font-size:.6rem;
+      font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      padding:.25rem .6rem; margin-bottom:.9rem;
+    }
+    .hero-tagline {
+      font-family:var(--baskerville); font-size:clamp(.9rem,1.5vw,1.1rem);
+      line-height:1.7; color:var(--ink-soft); margin:1rem 0 1.5rem;
+    }
+    .hero-cta-row { display:flex; flex-wrap:wrap; gap:.75rem; margin-top:1.5rem; }
+
+    /* ── Hero stat strip ── */
+    .hero-strip {
+      margin-top:2.5rem;
+      display:grid; grid-template-columns:repeat(3,1fr);
+      border:1px solid var(--rule);
+    }
+    @media(max-width:639px){ .hero-strip { grid-template-columns:1fr; } }
+    .strip-cell {
+      padding:1.25rem 1.5rem; border-right:1px solid var(--rule);
+      border-bottom:0;
+    }
+    .strip-cell:last-child { border-right:none; }
+    @media(max-width:639px){
+      .strip-cell { border-right:none; border-bottom:1px solid var(--rule); }
+      .strip-cell:last-child { border-bottom:none; }
+    }
+    .strip-num   { font-family:var(--serif); font-size:1.9rem; font-weight:800; line-height:1; }
+    .strip-label { font-family:var(--sans); font-size:.65rem; color:var(--ink-muted); font-weight:500; letter-spacing:.04em; margin-top:.3rem; line-height:1.4; }
+
+    /* ══════════════════════════════════════════════════
+       PLAN CARDS
+    ══════════════════════════════════════════════════ */
+    .plans-grid {
+      display:grid; grid-template-columns:1fr;
+      gap:0; border:1px solid var(--ink);
+    }
+    @media(min-width:860px){ .plans-grid { grid-template-columns:repeat(3,1fr); } }
+
+    .plan-card {
+      padding:2rem 1.75rem 2rem;
+      border-bottom:1px solid var(--ink);
+      display:flex; flex-direction:column;
+      position:relative;
+      transition:background .15s;
+    }
+    @media(min-width:860px){
+      .plan-card { border-bottom:none; border-right:1px solid var(--ink); }
+      .plan-card:last-child { border-right:none; }
+    }
+    .plan-card.featured { background:var(--ink); color:#fff; }
+    .plan-card:not(.featured):hover { background:var(--bg-warm); }
+
+    .plan-badge {
+      display:inline-block; font-family:var(--sans); font-size:.58rem;
+      font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      padding:.25rem .7rem; margin-bottom:1.1rem;
+      border:1.5px solid;
+    }
+    .plan-badge.green  { border-color:#2d7a3a; color:#2d7a3a; }
+    .plan-badge.amber  { border-color:#c9841a; color:#c9841a; background:rgba(251,191,36,.08); }
+    .plan-badge.violet { border-color:#5b4fcf; color:#5b4fcf; }
+    .plan-card.featured .plan-badge { border-color:rgba(255,255,255,.45); color:rgba(255,255,255,.7); }
+
+    .plan-name {
+      font-family:var(--serif); font-size:1.7rem; font-weight:800;
+      line-height:1; margin-bottom:.35rem;
+    }
+    .plan-card.featured .plan-name { color:#fff; }
+
+    .plan-sub {
+      font-family:var(--baskerville); font-size:.82rem; line-height:1.6;
+      color:var(--ink-muted); margin-bottom:1.5rem; font-style:italic;
+    }
+    .plan-card.featured .plan-sub { color:rgba(255,255,255,.5); }
+
+    .plan-price-row { display:flex; align-items:baseline; gap:.5rem; margin-bottom:.3rem; }
+    .plan-price {
+      font-family:var(--serif); font-size:clamp(2.2rem,5vw,3rem);
+      font-weight:900; line-height:1;
+    }
+    .plan-card.featured .plan-price { color:#fff; }
+
+    .plan-cadence { font-family:var(--sans); font-size:.68rem; color:var(--ink-muted); font-weight:600; margin-bottom:.9rem; }
+    .plan-card.featured .plan-cadence { color:rgba(255,255,255,.5); }
+
+    .plan-equiv {
+      display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:1.5rem;
+    }
+    .plan-tag {
+      font-family:var(--sans); font-size:.63rem; font-weight:700;
+      letter-spacing:.04em; padding:.2rem .6rem;
+      border:1px solid var(--rule); background:var(--bg-warm); color:var(--ink-soft);
+    }
+    .plan-card.featured .plan-tag { border-color:rgba(255,255,255,.2); background:rgba(255,255,255,.08); color:rgba(255,255,255,.65); }
+
+    .plan-rule { border:none; border-top:1px solid var(--rule); margin:1.25rem 0; }
+    .plan-card.featured .plan-rule { border-top-color:rgba(255,255,255,.15); }
+
+    .plan-features { list-style:none; flex:1; }
+    .plan-features li {
+      font-family:var(--baskerville); font-size:.82rem; line-height:1.65;
+      color:var(--ink-soft); padding:.35rem 0;
+      border-bottom:1px solid var(--rule);
+      display:flex; align-items:flex-start; gap:.6rem;
+    }
+    .plan-card.featured .plan-features li { color:rgba(255,255,255,.72); border-bottom-color:rgba(255,255,255,.1); }
+    .plan-features li:last-child { border-bottom:none; }
+    .plan-features li::before {
+      content:'—'; font-family:var(--sans); font-size:.65rem;
+      color:var(--ink-muted); font-weight:700; flex-shrink:0; margin-top:.18rem;
+    }
+    .plan-card.featured .plan-features li::before { color:rgba(255,255,255,.3); }
+
+    .plan-cta {
+      display:block; text-align:center; text-decoration:none;
+      font-family:var(--sans); font-size:.72rem; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase;
+      padding:.85rem 1.2rem; margin-top:1.75rem;
+      border:2px solid var(--ink);
+      transition:background .15s, color .15s;
+    }
+    .plan-cta.dark  { background:var(--ink); color:#fff; }
+    .plan-cta.dark:hover { background:var(--accent); border-color:var(--accent); }
+    .plan-cta.light { background:transparent; color:var(--ink); }
+    .plan-cta.light:hover { background:var(--bg-warm); }
+    .plan-cta.inv   { background:#fff; color:var(--ink); border-color:#fff; }
+    .plan-cta.inv:hover { background:var(--accent-lt); }
+
+    /* Most Popular tag */
+    .pop-tag {
+      position:absolute; top:1.25rem; right:1.25rem;
+      font-family:var(--sans); font-size:.58rem; font-weight:800;
+      letter-spacing:.1em; text-transform:uppercase;
+      background:#c9841a; color:#fff;
+      padding:.22rem .65rem;
+    }
+
+    /* ── Which Plan guide ── */
+    .which-grid {
+      display:grid; grid-template-columns:1fr;
+      border:1px solid var(--rule); margin-top:2rem;
+    }
+    @media(min-width:720px){ .which-grid { grid-template-columns:repeat(3,1fr); } }
+    .which-cell {
+      padding:1.5rem 1.75rem; border-bottom:1px solid var(--rule);
+      transition:background .12s;
+    }
+    .which-cell:hover { background:var(--bg-warm); }
+    @media(min-width:720px){
+      .which-cell { border-bottom:none; border-right:1px solid var(--rule); }
+      .which-cell:last-child { border-right:none; }
+    }
+    .which-label { font-family:var(--sans); font-size:.65rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:.5rem; }
+    .which-head  { font-family:var(--serif); font-size:1rem; font-weight:700; margin-bottom:.5rem; }
+    .which-body  { font-family:var(--baskerville); font-size:.8rem; line-height:1.7; color:var(--ink-soft); }
+
+    /* ══════════════════════════════════════════════════
+       COMPARISON TABLE
+    ══════════════════════════════════════════════════ */
+    .cmp-wrap { overflow-x:auto; border:1px solid var(--ink); margin-bottom:2rem; }
+    table { width:100%; min-width:600px; border-collapse:collapse; }
+    thead tr { background:var(--ink); }
+    thead th {
+      padding:.9rem 1.25rem; font-family:var(--sans); font-size:.65rem;
+      font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      border-right:1px solid rgba(255,255,255,.1); text-align:center;
+    }
+    thead th:first-child { text-align:left; color:rgba(255,255,255,.45); border-right:1px solid rgba(255,255,255,.1); }
+    thead th.col-applyiq { color:#6bb8e8; }
+    thead th .col-sub    { font-size:.58rem; font-weight:400; color:rgba(255,255,255,.38); letter-spacing:.04em; display:block; margin-top:.15rem; }
+    tbody tr td {
+      padding:.7rem 1.25rem; font-family:var(--baskerville); font-size:.82rem;
+      border-right:1px solid var(--rule); border-bottom:1px solid var(--rule); vertical-align:middle;
+    }
+    tbody tr td:first-child { font-family:var(--sans); font-size:.72rem; font-weight:700; letter-spacing:.02em; background:var(--bg-warm); }
+    tbody tr:last-child td  { border-bottom:none; }
+    tbody tr:nth-child(even) td { background:var(--bg); }
+    tbody tr:nth-child(even) td:first-child { background:var(--bg-warm); }
+    .cmp-win     { color:var(--accent); font-weight:700; text-align:center; }
+    .cmp-neutral { color:var(--ink-muted); text-align:center; }
+    .cmp-lose    { color:#bbb; text-align:center; }
+
+    /* ── Competitor cards ── */
+    .comp-grid {
+      display:grid; grid-template-columns:1fr;
+      border:1px solid var(--rule); margin-bottom:2rem;
+    }
+    @media(min-width:720px){ .comp-grid { grid-template-columns:repeat(3,1fr); } }
+    .comp-card {
+      padding:1.75rem; border-bottom:1px solid var(--rule);
+      transition:background .12s;
+    }
+    .comp-card:hover { background:var(--bg-warm); }
+    @media(min-width:720px){
+      .comp-card { border-bottom:none; border-right:1px solid var(--rule); }
+      .comp-card:last-child { border-right:none; }
+    }
+    .comp-head  { font-family:var(--sans); font-size:.65rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:.6rem; }
+    .comp-title { font-family:var(--serif); font-size:1rem; font-weight:700; margin-bottom:.75rem; }
+    .comp-body  { font-family:var(--baskerville); font-size:.82rem; line-height:1.72; color:var(--ink-soft); }
+
+    /* ── Verdict box ── */
+    .verdict-box {
+      background:var(--ink); color:#fff;
+      padding:3rem 2.5rem; text-align:center;
+    }
+    .verdict-box .kicker-wr { font-family:var(--sans); font-size:.6rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:1rem; display:block; }
+    .verdict-box .v-title   { font-family:var(--serif); font-size:clamp(1.6rem,3.5vw,2.8rem); font-weight:800; color:#fff; margin-bottom:1rem; }
+    .verdict-box .v-body    { font-family:var(--baskerville); font-size:.9rem; line-height:1.75; color:rgba(255,255,255,.6); max-width:680px; margin:0 auto 2rem; }
+    .verdict-cta-row { display:flex; flex-wrap:wrap; gap:.85rem; justify-content:center; }
+
+    /* ══════════════════════════════════════════════════
+       FEATURES INCLUDED
+    ══════════════════════════════════════════════════ */
+    .incl-grid {
+      display:grid; grid-template-columns:1fr;
+      gap:0; border:1px solid var(--rule);
+    }
+    @media(min-width:720px){ .incl-grid { grid-template-columns:1fr 1fr; } }
+    .incl-cell {
+      display:flex; align-items:flex-start; gap:1.1rem;
+      padding:1.5rem 1.75rem;
+      border-bottom:1px solid var(--rule);
+      transition:background .12s;
+    }
+    .incl-cell:hover { background:var(--bg-warm); }
+    @media(min-width:720px){
+      /* Right column cells don't show left border gap, handled by grid */
+    }
+    .incl-cell:nth-last-child(-n+2) { border-bottom:none; }
+    @media(max-width:719px){
+      .incl-cell { border-bottom:1px solid var(--rule); }
+      .incl-cell:last-child { border-bottom:none; }
+      .incl-cell:nth-last-child(2) { border-bottom:1px solid var(--rule); }
+    }
+    @media(min-width:720px){
+      /* Add right border to odd cells */
+      .incl-cell:nth-child(odd) { border-right:1px solid var(--rule); }
+    }
+    .incl-icon { font-size:1.5rem; flex-shrink:0; margin-top:.1rem; }
+    .incl-name { font-family:var(--sans); font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; margin-bottom:.35rem; }
+    .incl-body { font-family:var(--baskerville); font-size:.8rem; line-height:1.68; color:var(--ink-soft); }
+
+    /* ══════════════════════════════════════════════════
+       FAQ
+    ══════════════════════════════════════════════════ */
+    .faq-list { border:1px solid var(--rule); }
+    .faq-item { border-bottom:1px solid var(--rule); }
+    .faq-item:last-child { border-bottom:none; }
+    .faq-btn {
+      width:100%; display:flex; align-items:center; justify-content:space-between; gap:1rem;
+      padding:1.1rem 1.5rem; text-align:left; background:none; border:none; cursor:pointer;
+      font-family:var(--sans); font-size:.85rem; font-weight:700; color:var(--ink);
+      transition:background .12s, color .12s;
+    }
+    .faq-btn:hover { background:var(--bg-warm); color:var(--accent); }
+    .faq-chevron { width:16px; height:16px; flex-shrink:0; transition:transform .25s ease; color:var(--ink-muted); }
+    .faq-chevron.rotated { transform:rotate(180deg); }
+    .faq-body {
+      max-height:0; overflow:hidden;
+      font-family:var(--baskerville); font-size:.85rem; line-height:1.75; color:var(--ink-soft);
+      transition:max-height .28s ease, padding .28s ease;
+      padding:0 1.5rem;
+    }
+    .faq-body.open { max-height:300px; padding:.75rem 1.5rem 1.5rem; }
+
+    /* ══════════════════════════════════════════════════
+       CONTACT
+    ══════════════════════════════════════════════════ */
+    .contact-grid {
+      display:grid; grid-template-columns:1fr;
+      border:1px solid var(--rule);
+    }
+    @media(min-width:720px){ .contact-grid { grid-template-columns:1fr 1px 1fr; } }
+    .contact-col { padding:2.5rem 2rem; }
+    .contact-col:first-child { border-bottom:1px solid var(--rule); }
+    @media(min-width:720px){ .contact-col:first-child { border-bottom:none; } }
+    .contact-divider { display:none; background:var(--rule); }
+    @media(min-width:720px){ .contact-divider { display:block; } }
+    .contact-col-icon  { font-size:2rem; margin-bottom:1rem; }
+    .contact-col-title { font-family:var(--serif); font-size:1.35rem; font-weight:700; margin-bottom:.5rem; }
+    .contact-col-deck  { font-family:var(--baskerville); font-size:.85rem; line-height:1.7; color:var(--ink-soft); margin-bottom:1.25rem; }
+    .contact-link-big  { font-family:var(--serif); font-size:1.5rem; font-weight:700; color:var(--ink); text-decoration:none; display:block; margin-bottom:.75rem; transition:color .15s; }
+    .contact-link-big:hover { color:var(--accent); }
+    .contact-link-sm   {
+      display:inline-flex; align-items:center; gap:.5rem;
+      font-family:var(--sans); font-size:.72rem; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase;
+      color:var(--accent); text-decoration:none;
+      border-bottom:1.5px solid var(--accent); padding-bottom:1px;
+      transition:color .15s, border-color .15s;
+    }
+    .contact-link-sm:hover { color:var(--ink); border-color:var(--ink); }
+
+    /* ── Final CTA (dark) ── */
+    .cta-dark-box { background:var(--bg-dark); color:#fff; padding:3.5rem 2.5rem; text-align:center; margin-top:2rem; }
+    .cta-dark-box .ctad-kicker { font-family:var(--sans); font-size:.6rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.35); display:block; margin-bottom:1rem; }
+    .cta-dark-box .ctad-title  { font-family:var(--serif); font-size:clamp(1.7rem,3.5vw,3rem); font-weight:800; color:#fff; margin-bottom:1rem; }
+    .cta-dark-box .ctad-body   { font-family:var(--baskerville); font-size:.95rem; line-height:1.75; color:rgba(255,255,255,.58); max-width:600px; margin:0 auto 1.75rem; }
+    .cta-dark-row { display:flex; flex-wrap:wrap; gap:.85rem; justify-content:center; }
+
+    /* ══════════════════════════════════════════════════
+       ROI SECTION
+    ══════════════════════════════════════════════════ */
+    .roi-section { background:var(--bg-dark); padding:4rem 0; }
+    .roi-inner   { max-width:820px; margin:0 auto; text-align:center; }
+    .roi-kicker  { display:inline-block; border:1px solid rgba(255,255,255,.2); font-family:var(--sans); font-size:.6rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.45); padding:.3rem .75rem; margin-bottom:1.5rem; }
+    .roi-display { font-family:var(--serif); font-size:clamp(2.2rem,5vw,4.2rem); font-weight:800; line-height:1.05; color:#fff; margin-bottom:1.25rem; }
+    .roi-display em { color:rgba(255,255,255,.4); font-style:italic; }
+    .roi-rule    { width:3rem; height:3px; background:var(--accent-r); margin:.75rem auto 1.25rem; }
+    .roi-deck    { font-family:var(--baskerville); font-size:.95rem; line-height:1.75; color:rgba(255,255,255,.6); margin-bottom:.75rem; }
+    .roi-deck strong { color:#fff; }
+    .roi-sub     { font-family:var(--sans); font-size:.78rem; font-weight:700; letter-spacing:.05em; color:rgba(255,255,255,.4); margin-bottom:2.25rem; }
+    .roi-cta-row { display:flex; flex-wrap:wrap; gap:.85rem; justify-content:center; }
+
+    /* ══════════════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════════════ */
+    .wsj-footer { background:var(--ink); color:rgba(255,255,255,.55); padding:3rem 0 1.5rem; }
+    .footer-top {
+      display:grid; grid-template-columns:1fr;
+      gap:2.5rem; margin-bottom:2.5rem; padding-bottom:2.5rem;
+      border-bottom:1px solid rgba(255,255,255,.12);
+    }
+    @media(min-width:720px){ .footer-top { grid-template-columns:2fr 1fr 1fr; } }
+    .footer-brand-name { font-family:var(--serif); font-size:1.5rem; font-weight:800; color:#fff; letter-spacing:-.01em; }
+    .footer-brand-name span { color:#6b9eca; }
+    .footer-brand-sub  { font-family:var(--sans); font-size:.55rem; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.22); margin-top:.2rem; font-weight:600; }
+    .footer-brand-desc { font-family:var(--baskerville); font-size:.8rem; line-height:1.7; color:rgba(255,255,255,.4); margin-top:.65rem; }
+    .footer-col-head   { font-family:var(--sans); font-size:.6rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.35); margin-bottom:1rem; }
+    .footer-col a      { display:block; font-family:var(--sans); font-size:.8rem; font-weight:500; color:rgba(255,255,255,.52); text-decoration:none; margin-bottom:.55rem; transition:color .12s; }
+    .footer-col a:hover { color:#fff; }
+    .footer-bottom     { display:flex; flex-direction:column; gap:.5rem; align-items:center; text-align:center; }
+    @media(min-width:720px){ .footer-bottom { flex-direction:row; justify-content:space-between; text-align:left; } }
+    .footer-copy       { font-family:var(--sans); font-size:.68rem; color:rgba(255,255,255,.28); }
+    .footer-dev        { font-family:var(--sans); font-size:.65rem; color:rgba(255,255,255,.18); text-decoration:none; transition:color .12s; }
+    .footer-dev:hover  { color:rgba(255,255,255,.42); }
 
     /* ── Scroll reveal ── */
-    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
-    .reveal.in { opacity: 1; transform: none; }
+    .reveal { opacity:0; transform:translateY(18px); transition:opacity .5s ease, transform .5s ease; }
+    .reveal.in { opacity:1; transform:none; }
 
-    /* ── Comparison table colours ── */
-    .cmp-win { color: #0ea5e9; font-weight: 700; }
-    .cmp-neutral { color: #64748b; }
-    .cmp-lose { color: #cbd5e1; }
-    tr:nth-child(odd) td { background: #f0f9ff; }
-
-    /* ── FAQ ── */
-    .faq-body { max-height: 0; overflow: hidden; transition: max-height .3s ease, padding-bottom .3s ease; }
-    .faq-body.open { max-height: 400px; padding-bottom: 1.5rem; }
-    .faq-chevron { transition: transform .3s ease; }
-    .faq-chevron.rotated { transform: rotate(180deg); }
-
-    /* ── Savings badge ── */
-    .savings-tag { background: linear-gradient(90deg, #22c55e, #16a34a); }
-
-    /* ── Fluid type ── */
-    .hero-h1     { font-size: clamp(1.9rem, 5vw + 0.5rem, 4rem);   line-height: 1.07; }
-    .section-h2  { font-size: clamp(1.65rem, 3.5vw + 0.5rem, 3.2rem); line-height: 1.1; }
-    .price-big   { font-size: clamp(2.5rem, 7vw, 3.75rem); }
-    .lead-text   { font-size: clamp(1rem, 1.5vw + 0.2rem, 1.25rem); }
+    /* ── Responsive tweaks ── */
+    @media(max-width:639px){
+      .hero-cta-row, .roi-cta-row, .verdict-cta-row, .cta-dark-row { flex-direction:column; }
+      .hero-cta-row a, .roi-cta-row a, .verdict-cta-row a, .cta-dark-row a { text-align:center; justify-content:center; width:100%; }
+      .contact-col { padding:1.75rem 1.25rem; }
+      .cta-dark-box { padding:2.5rem 1.25rem; }
+      .verdict-box { padding:2rem 1.25rem; }
+    }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════════════
-     NAV
-════════════════════════════════════════════════════ -->
-<nav class="sticky top-0 z-50 bg-white/92 nav-blur border-b border-slate-100">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-    <div class="flex items-center justify-between h-16 sm:h-20">
+  <!-- ── Top Bar ── -->
+  <div class="top-bar">
+    <a href="{{ url_for('landing') }}">← Home</a>
+    <a href="#plans">Plans</a>
+    <a href="{{ url_for('login') }}">Log In</a>
+    <a href="{{ url_for('signup') }}">Start Free Trial</a>
+    <span style="opacity:.3;margin:0 .4rem">|</span>
+    <a href="tel:+916238461560">📞 +91 62384 61560</a>
+  </div>
 
-      <!-- Logo -->
-      <a href="{{ url_for('landing') }}" class="flex items-center gap-2 shrink-0">
-        <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-sky-600 shadow-sm">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-          </svg>
-        </div>
-        <span class="sora font-bold text-lg sm:text-[1.35rem] tracking-tighter text-slate-950">ApplyIQ<span class="text-sky-600">Leads</span></span>
+  <!-- ── NAV ── -->
+  <nav class="wsj-nav">
+    <div class="nav-inner">
+      <a href="{{ url_for('landing') }}" class="nav-logo">
+        <div class="nav-logo-name">ApplyIQ</div>
+        <div class="nav-logo-sub">Study Abroad CRM · India</div>
       </a>
-
-      <!-- Desktop nav -->
-      <div class="hidden md:flex items-center gap-1">
-        <a href="#plans"    class="text-[0.9rem] font-semibold text-slate-600 hover:text-sky-600 px-3 py-2 rounded-full transition">Plans</a>
-        <a href="#compare"  class="text-[0.9rem] font-semibold text-slate-600 hover:text-sky-600 px-3 py-2 rounded-full transition">vs Others</a>
-        <a href="#included" class="text-[0.9rem] font-semibold text-slate-600 hover:text-sky-600 px-3 py-2 rounded-full transition">What's Included</a>
-        <a href="#faq"      class="text-[0.9rem] font-semibold text-slate-600 hover:text-sky-600 px-3 py-2 rounded-full transition">FAQ</a>
-        <a href="#contact"  class="text-[0.9rem] font-semibold text-slate-600 hover:text-sky-600 px-3 py-2 rounded-full transition">Contact</a>
-        <div class="w-px h-5 bg-slate-200 mx-2"></div>
-        <a href="{{ url_for('login') }}"   class="text-[0.9rem] font-semibold text-slate-700 hover:text-sky-600 px-4 py-2 rounded-full transition">Login</a>
-        <a href="{{ url_for('signup') }}"  class="text-[0.9rem] font-semibold text-white bg-slate-950 px-5 py-2.5 rounded-full hover:bg-sky-600 transition shadow-sm">Get Started Free</a>
+      <div class="nav-links">
+        <a href="#plans">Plans</a>
+        <a href="#compare">vs Others</a>
+        <a href="#included">What's Included</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+        <a href="{{ url_for('login') }}" class="nav-accent">Login</a>
+        <a href="{{ url_for('signup') }}" class="nav-cta">Get Started Free</a>
       </div>
-
-      <!-- Mobile hamburger -->
-      <button id="mob-btn" aria-label="Open menu" class="md:hidden p-2 rounded-xl hover:bg-slate-100 transition">
-        <svg class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
+      <button class="nav-ham" id="mob-btn" aria-label="Open menu">
+        <span></span><span></span><span></span>
       </button>
     </div>
+    <div class="mobile-menu" id="mob-menu">
+      <a href="#plans">Plans</a>
+      <a href="#compare">vs Others</a>
+      <a href="#included">What's Included</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+      <a href="{{ url_for('login') }}" style="color:var(--accent);">Login</a>
+      <a href="{{ url_for('signup') }}" class="mob-cta">Get Started Free</a>
+      <div class="mob-phone"><a href="tel:+916238461560" style="color:var(--accent);text-decoration:none;">📞 +91 62384 61560</a></div>
+    </div>
+  </nav>
 
-    <!-- Mobile dropdown -->
-    <div id="mob-menu" class="md:hidden">
-      <div class="pb-4 pt-2 space-y-1 border-t border-slate-100">
-        <a href="#plans"    class="block px-4 py-3 text-base font-semibold text-slate-700 hover:text-sky-600 rounded-xl hover:bg-slate-50 transition">Plans</a>
-        <a href="#compare"  class="block px-4 py-3 text-base font-semibold text-slate-700 hover:text-sky-600 rounded-xl hover:bg-slate-50 transition">vs Others</a>
-        <a href="#included" class="block px-4 py-3 text-base font-semibold text-slate-700 hover:text-sky-600 rounded-xl hover:bg-slate-50 transition">What's Included</a>
-        <a href="#faq"      class="block px-4 py-3 text-base font-semibold text-slate-700 hover:text-sky-600 rounded-xl hover:bg-slate-50 transition">FAQ</a>
-        <a href="#contact"  class="block px-4 py-3 text-base font-semibold text-slate-700 hover:text-sky-600 rounded-xl hover:bg-slate-50 transition">Contact</a>
-        <div class="border-t border-slate-100 my-2"></div>
-        <a href="{{ url_for('login') }}"   class="block px-4 py-3 text-base font-semibold text-slate-700 hover:text-sky-600 rounded-xl hover:bg-slate-50 transition">Login</a>
-        <a href="{{ url_for('signup') }}"  class="block text-center px-4 py-3.5 text-base font-bold text-white bg-slate-950 rounded-2xl hover:bg-sky-600 transition mt-2">Get Started Free</a>
-        <div class="mt-3 pt-3 border-t border-slate-100 text-center">
-          <a href="tel:+916238461560" class="text-sm text-sky-600 font-semibold">📞 +91 62384 61560</a>
-        </div>
-      </div>
+  <!-- ── Dateline ── -->
+  <div style="border-bottom:1px solid var(--rule);background:var(--bg-warm);">
+    <div class="dateline-bar">
+      <div class="dl-left">Pricing — Flat Rate · No Per-User Fees · All Features Included</div>
+      <div class="dl-right">Quarterly · Semi-Annual · Annual Plans</div>
     </div>
   </div>
-</nav>
 
+  <!-- ════════════════════
+       HERO
+  ════════════════════ -->
+  <header class="hero-section">
+    <div class="container">
+      <div class="section-stamp">Pricing & Plans</div>
+      <h1 class="display-xl reveal">
+        Flat Pricing.<br>Every Feature.<br>
+        <em style="font-style:italic;color:var(--ink-muted);">No Surprises.</em>
+      </h1>
+      <p class="hero-tagline reveal" style="transition-delay:.07s;max-width:600px;">
+        One price. All features. Unlimited counsellors. No per-user fees, no add-ons, no hidden charges. Start with a 14-day free trial — no credit card needed.
+      </p>
+      <div class="hero-cta-row reveal" style="transition-delay:.12s;">
+        <a href="#plans" class="btn-primary">
+          See Plans
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </a>
+        <a href="{{ url_for('signup') }}" class="btn-secondary">Start 14-Day Free Trial →</a>
+      </div>
+      <p class="fine-print reveal" style="margin-top:.65rem;transition-delay:.16s;">
+        Questions? Call <a href="tel:+916238461560" style="color:var(--accent);font-weight:700;">+91 62384 61560</a> or email <a href="mailto:jakobvargis@zohomail.in" style="color:var(--accent);font-weight:700;">jakobvargis@zohomail.in</a>
+      </p>
 
-<!-- ════════════════════════════════════════════════════
-     HERO
-════════════════════════════════════════════════════ -->
-<header class="hero-glow pt-14 pb-18 sm:pt-24 sm:pb-28 md:pt-32 md:pb-36" style="padding-bottom: clamp(3.5rem, 8vw, 9rem);">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10 text-center">
-
-    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-sky-200 bg-white text-sky-700 text-xs sm:text-sm font-semibold mb-6 sm:mb-10 shadow-sm reveal">
-      💡 Purpose-built for Study Abroad &amp; Overseas Education · Priced for India
+      <div class="hero-strip reveal" style="transition-delay:.18s;">
+        <div class="strip-cell">
+          <div class="strip-num">₹117</div>
+          <div class="strip-label">Per day on Annual plan — less than a cup of coffee</div>
+        </div>
+        <div class="strip-cell">
+          <div class="strip-num">₹0</div>
+          <div class="strip-label">Per-user fees — ever. Add counsellors freely.</div>
+        </div>
+        <div class="strip-cell">
+          <div class="strip-num">14</div>
+          <div class="strip-label">Days free trial — full access, no card required</div>
+        </div>
+      </div>
     </div>
-
-    <h1 class="sora hero-h1 font-extrabold tracking-tighter text-slate-950 mb-5 sm:mb-7 reveal">
-      Flat Pricing. Every Feature.<br/>
-      <span class="text-gradient">No Surprises.</span>
-    </h1>
-
-    <p class="lead-text text-slate-500 mb-7 sm:mb-10 max-w-2xl mx-auto leading-relaxed font-light reveal">
-      One price. All features. Unlimited counsellors. No per-user fees, no add-ons, no hidden charges. Start with a 14-day free trial — no credit card needed.
-    </p>
-
-    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center reveal">
-      <a href="#plans" class="inline-flex items-center justify-center gap-2 px-8 py-4 text-base sm:text-lg font-bold text-white bg-sky-600 rounded-full hover:bg-sky-700 transition shadow-xl shadow-sky-200/50">
-        See Plans <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-      </a>
-      <a href="{{ url_for('signup') }}" class="inline-flex items-center justify-center px-8 py-4 text-base sm:text-lg font-semibold text-slate-900 bg-white rounded-full hover:bg-slate-50 transition border border-slate-200 shadow-sm">
-        Start 14-Day Free Trial
-      </a>
-    </div>
-
-    <p class="mt-4 sm:mt-5 text-xs sm:text-sm text-slate-400 reveal">Questions? Call <a href="tel:+916238461560" class="text-sky-600 font-semibold hover:underline">+91 62384 61560</a> or email <a href="mailto:jakobvargis@zohomail.in" class="text-sky-600 font-semibold hover:underline">jakobvargis@zohomail.in</a></p>
-  </div>
-</header>
+  </header>
 
 
-<!-- ════════════════════════════════════════════════════
-     PRICING PLANS
-════════════════════════════════════════════════════ -->
-<section id="plans" class="py-14 sm:py-20 md:py-28 bg-white">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
+  <!-- ════════════════════
+       PLANS
+  ════════════════════ -->
+  <section id="plans" class="wsj-section" style="background:var(--bg-warm);">
+    <div class="container">
 
-    <div class="text-center mb-10 sm:mb-16 md:mb-20 reveal">
-      <h2 class="sora section-h2 font-extrabold tracking-tighter text-slate-950 mb-4 sm:mb-5">Choose Your Payment Rhythm</h2>
-      <p class="lead-text text-slate-500 max-w-xl mx-auto">Same product. Same features. Same priority support. Just different payment schedules to match your cashflow.</p>
-    </div>
+      <div class="section-head">
+        <span class="section-head-title">Plans — Choose Your Payment Rhythm</span>
+        <div class="section-head-rule"></div>
+      </div>
 
-    <!-- Cards — single col mobile, 3-col md+ -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 items-stretch mb-10 sm:mb-12">
+      <h2 class="display-lg reveal" style="margin-bottom:.75rem;">Same Product. Same Features.<br>Different Payment Schedules.</h2>
+      <p class="deck reveal" style="max-width:580px;margin-bottom:2.5rem;transition-delay:.06s;">Match your cashflow to your intake season. Every plan includes the identical full-featured platform.</p>
 
-      <!-- ── ANNUAL ── -->
-      <div class="reveal card-lift bg-white rounded-2xl sm:rounded-3xl border-2 border-slate-200 p-7 sm:p-10 flex flex-col">
-        <div>
-          <div class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full savings-tag text-white text-xs font-extrabold mb-5 uppercase tracking-wide shadow-sm">
-            ✓ Best Value — Save ₹24,000
+      <!-- 3-column plan grid -->
+      <div class="plans-grid reveal" style="transition-delay:.1s;">
+
+        <!-- ANNUAL -->
+        <div class="plan-card">
+          <div class="plan-badge green">✓ Best Value — Save ₹24,000</div>
+          <div class="plan-name">Annual</div>
+          <div class="plan-sub">One payment. Zero admin for 12 months.</div>
+          <div class="plan-price-row">
+            <div class="plan-price">₹42,000</div>
           </div>
-          <h3 class="sora text-2xl sm:text-3xl font-extrabold text-slate-950 mb-2">Annual</h3>
-          <p class="text-slate-500 mb-6 sm:mb-8 text-sm sm:text-base">One payment. Zero admin for 12 months.</p>
-        </div>
-        <div class="mb-6 sm:mb-8">
-          <div class="flex items-baseline gap-2 mb-2">
-            <span class="sora price-big font-extrabold text-slate-950">₹42,000</span>
+          <div class="plan-cadence">Single payment · 12 months full access</div>
+          <div class="plan-equiv">
+            <span class="plan-tag">= ₹3,500 / month</span>
+            <span class="plan-tag">= ₹117 / day</span>
           </div>
-          <div class="text-slate-500 text-sm sm:text-base">Single payment · 12 months full access</div>
-          <div class="mt-3 sm:mt-4 flex gap-2 flex-wrap">
-            <span class="inline-block text-xs sm:text-sm text-green-700 font-bold bg-green-50 px-3 sm:px-4 py-1.5 rounded-full border border-green-200">= ₹3,500 / month</span>
-            <span class="inline-block text-xs sm:text-sm text-green-700 font-bold bg-green-50 px-3 sm:px-4 py-1.5 rounded-full border border-green-200">= ₹117 / day</span>
+          <hr class="plan-rule">
+          <ul class="plan-features">
+            <li>1 Super Admin account</li>
+            <li><strong>10+ counsellor accounts</strong> — zero per-user fee</li>
+            <li><strong>25,000+ lead capacity</strong></li>
+            <li>All 8 management reports</li>
+            <li>Intake alerts · WhatsApp templates</li>
+            <li>CSV import · Audit trail</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="{{ url_for('signup') }}" class="plan-cta dark">Get Started — ₹42,000 / year</a>
+        </div>
+
+        <!-- SEMI-ANNUAL (FEATURED) -->
+        <div class="plan-card featured">
+          <div class="pop-tag">Most Popular</div>
+          <div class="plan-badge amber">2 Installments · Lower Upfront</div>
+          <div class="plan-name">Semi-Annual</div>
+          <div class="plan-sub">Full access from day one. Pay in two halves.</div>
+          <div class="plan-price-row">
+            <div class="plan-price">₹27,000</div>
           </div>
-        </div>
-        <ul class="space-y-3 text-slate-600 mb-8 sm:mb-10 flex-1 text-sm sm:text-base">
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>1 Super Admin account</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span><strong>10+ counsellor accounts</strong> — zero per-user fee</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span><strong>25,000+ lead capacity</strong></span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>All 8 management reports</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>Intake alerts · WhatsApp templates</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>CSV import · Audit trail</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>Priority support</span></li>
-        </ul>
-        <a href="{{ url_for('signup') }}" class="block text-center px-6 py-4 rounded-2xl bg-sky-600 text-white font-extrabold text-sm sm:text-base hover:bg-sky-700 transition">
-          Get Started — ₹42,000 / year
-        </a>
-      </div>
-
-      <!-- ── SEMI-ANNUAL (FEATURED) ── -->
-      <div class="reveal card-lift card-dark rounded-2xl sm:rounded-3xl p-7 sm:p-10 flex flex-col relative overflow-hidden order-first md:order-none">
-        <div class="absolute top-4 right-4 sm:top-5 sm:right-5 badge-pulse bg-amber-400 text-slate-900 text-xs font-extrabold px-3 sm:px-4 py-1.5 rounded-full uppercase tracking-wide">Most Popular</div>
-        <div>
-          <div class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-sky-200 text-xs font-bold mb-5 uppercase tracking-wide">2 Installments · Lower Upfront</div>
-          <h3 class="sora text-2xl sm:text-3xl font-extrabold text-white mb-2">Semi-Annual</h3>
-          <p class="text-sky-200 mb-6 sm:mb-8 text-sm sm:text-base">Full access from day one. Pay in two halves.</p>
-        </div>
-        <div class="mb-6 sm:mb-8">
-          <div class="flex items-baseline gap-2 mb-2">
-            <span class="sora price-big font-extrabold text-white">₹27,000</span>
+          <div class="plan-cadence">Now + ₹27,000 after 6 months</div>
+          <div class="plan-equiv">
+            <span class="plan-tag">Total ₹54,000</span>
+            <span class="plan-tag">= ₹4,500 / month</span>
           </div>
-          <div class="text-sky-200 text-sm sm:text-base">Now + ₹27,000 after 6 months</div>
-          <div class="mt-3 sm:mt-4 flex gap-2 flex-wrap">
-            <span class="inline-block text-xs sm:text-sm text-amber-300 font-bold bg-white/10 px-3 sm:px-4 py-1.5 rounded-full border border-amber-400/30">Total ₹54,000</span>
-            <span class="inline-block text-xs sm:text-sm text-amber-300 font-bold bg-white/10 px-3 sm:px-4 py-1.5 rounded-full border border-amber-400/30">= ₹4,500/month</span>
+          <hr class="plan-rule">
+          <ul class="plan-features">
+            <li>Everything in Annual — identical product</li>
+            <li><strong>Full access from day one</strong></li>
+            <li>Aligns with intake season revenue</li>
+            <li>10+ users · 25,000+ leads</li>
+            <li>All 8 reports · every feature</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="{{ url_for('signup') }}" class="plan-cta inv">Start Now — ₹27,000 First Payment</a>
+        </div>
+
+        <!-- QUARTERLY -->
+        <div class="plan-card">
+          <div class="plan-badge violet">Lowest Entry · Pay as You Grow</div>
+          <div class="plan-name">Quarterly</div>
+          <div class="plan-sub">Four payments. Minimum upfront commitment.</div>
+          <div class="plan-price-row">
+            <div class="plan-price">₹16,500</div>
           </div>
-        </div>
-        <ul class="space-y-3 text-sky-100 mb-8 sm:mb-10 flex-1 text-sm sm:text-base">
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>Everything in Annual — identical product</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span><strong>Full access from day one</strong></span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>Aligns with intake season revenue</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>10+ users · 25,000+ leads</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>All 8 reports · every feature</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>Priority support</span></li>
-        </ul>
-        <a href="{{ url_for('signup') }}" class="block text-center px-6 py-4 rounded-2xl bg-white text-slate-900 font-extrabold text-sm sm:text-base hover:bg-amber-50 transition">
-          Start Now — ₹27,000 First Payment
-        </a>
-      </div>
-
-      <!-- ── QUARTERLY ── -->
-      <div class="reveal card-lift bg-white rounded-2xl sm:rounded-3xl border-2 border-slate-200 p-7 sm:p-10 flex flex-col">
-        <div>
-          <div class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-violet-50 border border-violet-200 text-violet-700 text-xs font-extrabold mb-5 uppercase tracking-wide">Lowest Entry · Pay as You Grow</div>
-          <h3 class="sora text-2xl sm:text-3xl font-extrabold text-slate-950 mb-2">Quarterly</h3>
-          <p class="text-slate-500 mb-6 sm:mb-8 text-sm sm:text-base">Four payments. Minimum upfront commitment.</p>
-        </div>
-        <div class="mb-6 sm:mb-8">
-          <div class="flex items-baseline gap-2 mb-2">
-            <span class="sora price-big font-extrabold text-slate-950">₹16,500</span>
+          <div class="plan-cadence">Every 3 months · 4 payments per year</div>
+          <div class="plan-equiv">
+            <span class="plan-tag">Total ₹66,000</span>
+            <span class="plan-tag">= ₹5,500 / month</span>
           </div>
-          <div class="text-slate-500 text-sm sm:text-base">Every 3 months · 4 payments per year</div>
-          <div class="mt-3 sm:mt-4 flex gap-2 flex-wrap">
-            <span class="inline-block text-xs sm:text-sm text-violet-700 font-bold bg-violet-50 px-3 sm:px-4 py-1.5 rounded-full border border-violet-200">Total ₹66,000</span>
-            <span class="inline-block text-xs sm:text-sm text-violet-700 font-bold bg-violet-50 px-3 sm:px-4 py-1.5 rounded-full border border-violet-200">= ₹5,500/month</span>
-          </div>
+          <hr class="plan-rule">
+          <ul class="plan-features">
+            <li>Everything in Annual — identical product</li>
+            <li><strong>Only ₹16,500 to get started</strong></li>
+            <li>Matches Jan/Apr/Jul/Oct intake seasons</li>
+            <li>10+ users · 25,000+ leads</li>
+            <li>All 8 reports · every feature</li>
+            <li>Standard support</li>
+          </ul>
+          <a href="{{ url_for('signup') }}" class="plan-cta dark">Start Now — ₹16,500 / quarter</a>
         </div>
-        <ul class="space-y-3 text-slate-600 mb-8 sm:mb-10 flex-1 text-sm sm:text-base">
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>Everything in Annual — identical product</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span><strong>Only ₹16,500 to get started</strong></span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>Matches Jan/Apr/Jul/Oct intake seasons</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>10+ users · 25,000+ leads</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>All 8 reports · every feature</span></li>
-          <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg><span>Standard support</span></li>
-        </ul>
-        <a href="{{ url_for('signup') }}" class="block text-center px-6 py-4 rounded-2xl bg-slate-950 text-white font-extrabold text-sm sm:text-base hover:bg-slate-800 transition">
-          Start Now — ₹16,500 / quarter
-        </a>
+
+      </div>
+
+      <!-- Which plan guide -->
+      <div class="which-grid reveal" style="transition-delay:.14s;">
+        <div class="which-cell">
+          <div class="which-label">Annual</div>
+          <div class="which-head">Best Value</div>
+          <div class="which-body">Established consultancy with steady lead flow. Lowest possible cost and zero payment admin for 12 months. Saves ₹12,000 vs semi-annual and ₹24,000 vs quarterly.</div>
+        </div>
+        <div class="which-cell">
+          <div class="which-label">Semi-Annual</div>
+          <div class="which-head">Most Flexible</div>
+          <div class="which-body">Growing and want to spread cost. Pay the second installment after your September or January intake revenue comes in. Balanced cashflow without maximum commitment.</div>
+        </div>
+        <div class="which-cell">
+          <div class="which-label">Quarterly</div>
+          <div class="which-head">Lowest Barrier</div>
+          <div class="which-body">New, or want to validate ROI before committing fully. Only ₹16,500 to get started. Payments align naturally with Jan, Apr, Jul, Oct intake revenue cycles.</div>
+        </div>
       </div>
 
     </div>
+  </section>
 
-    <!-- Which plan guide -->
-    <div class="reveal bg-slate-50 rounded-2xl sm:rounded-3xl border border-slate-200 p-7 sm:p-10">
-      <h3 class="sora text-xl sm:text-2xl font-bold text-slate-900 text-center mb-6 sm:mb-8">Which plan is right for me?</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-        <div class="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-7 border border-green-100">
-          <div class="sora font-bold text-green-700 text-base sm:text-lg mb-2 sm:mb-3">Annual — Best Value</div>
-          <p class="text-slate-500 leading-relaxed text-sm sm:text-base">Established consultancy with steady lead flow. Lowest possible cost and zero payment admin for 12 months. Saves ₹12,000 vs semi-annual and ₹24,000 vs quarterly.</p>
-        </div>
-        <div class="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-7 border border-sky-100">
-          <div class="sora font-bold text-sky-700 text-base sm:text-lg mb-2 sm:mb-3">Semi-Annual — Most Flexible</div>
-          <p class="text-slate-500 leading-relaxed text-sm sm:text-base">Growing and want to spread cost. Pay the second installment after your September or January intake revenue comes in. Balanced cashflow without maximum commitment.</p>
-        </div>
-        <div class="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-7 border border-violet-100">
-          <div class="sora font-bold text-violet-700 text-base sm:text-lg mb-2 sm:mb-3">Quarterly — Lowest Barrier</div>
-          <p class="text-slate-500 leading-relaxed text-sm sm:text-base">New, or want to validate ROI before committing fully. Only ₹16,500 to get started. Payments align naturally with Jan, Apr, Jul, Oct intake revenue cycles.</p>
-        </div>
+
+  <!-- ════════════════════
+       COMPARISON
+  ════════════════════ -->
+  <section id="compare" class="wsj-section" style="background:var(--bg);">
+    <div class="container">
+
+      <div class="section-head">
+        <span class="section-head-title">Analysis — Honest Comparison</span>
+        <div class="section-head-rule"></div>
       </div>
-    </div>
 
-  </div>
-</section>
+      <h2 class="display-lg reveal" style="margin-bottom:.75rem;">Why ₹42,000 Flat Is<br>a Very Good Deal</h2>
+      <p class="deck reveal" style="max-width:620px;margin-bottom:2.5rem;transition-delay:.06s;">We respect Zoho, Odoo, and HubSpot — they're excellent platforms. But they were built for generic businesses, not for the way study abroad consultancies actually work.</p>
 
-
-<!-- ════════════════════════════════════════════════════
-     PRICE COMPARISON — vs Zoho, Odoo, HubSpot
-════════════════════════════════════════════════════ -->
-<section id="compare" class="py-14 sm:py-20 md:py-28 bg-slate-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-
-    <div class="text-center mb-10 sm:mb-16 md:mb-20 reveal">
-      <div class="inline-block px-4 py-1.5 rounded-full bg-slate-200 text-slate-600 text-xs sm:text-sm font-bold uppercase tracking-wide mb-4 sm:mb-5">Honest Comparison</div>
-      <h2 class="sora section-h2 font-extrabold tracking-tighter text-slate-950 mb-4 sm:mb-5">
-        Why ₹42,000 Flat Is a<br class="hidden sm:block"/> Very Good Deal
-      </h2>
-      <p class="lead-text text-slate-500 max-w-2xl mx-auto">We respect Zoho, Odoo, and HubSpot — they're excellent platforms. But they were built for generic businesses, not for the way study abroad consultancies actually work.</p>
-    </div>
-
-    <!-- Scrollable comparison table -->
-    <div class="reveal overflow-x-auto rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm mb-10 sm:mb-14">
-      <table class="w-full min-w-[600px] border-collapse text-left">
-        <thead>
-          <tr class="bg-slate-950 text-white">
-            <th class="px-4 sm:px-7 py-4 sm:py-5 text-xs sm:text-sm font-semibold text-slate-400 uppercase tracking-wide w-[28%]">Cost Factor</th>
-            <th class="px-4 sm:px-7 py-4 sm:py-5 text-center border-l border-white/10 w-[18%]">
-              <div class="sora font-bold text-sky-400 text-sm sm:text-base">ApplyIQ</div>
-              <div class="text-xs text-slate-400 mt-0.5 font-normal hidden sm:block">Study abroad specialist</div>
-            </th>
-            <th class="px-4 sm:px-7 py-4 sm:py-5 text-center border-l border-white/10 w-[18%]">
-              <div class="sora font-bold text-slate-300 text-sm sm:text-base">Zoho CRM</div>
-              <div class="text-xs text-slate-500 mt-0.5 font-normal hidden sm:block">General enterprise CRM</div>
-            </th>
-            <th class="px-4 sm:px-7 py-4 sm:py-5 text-center border-l border-white/10 w-[18%]">
-              <div class="sora font-bold text-slate-300 text-sm sm:text-base">Odoo</div>
-              <div class="text-xs text-slate-500 mt-0.5 font-normal hidden sm:block">ERP with CRM module</div>
-            </th>
-            <th class="px-4 sm:px-7 py-4 sm:py-5 text-center border-l border-white/10 w-[18%]">
-              <div class="sora font-bold text-slate-300 text-sm sm:text-base">HubSpot</div>
-              <div class="text-xs text-slate-500 mt-0.5 font-normal hidden sm:block">Marketing + CRM</div>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="text-xs sm:text-sm">
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">Base cost (10 users/year)</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">₹42,000 flat</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">₹18k–₹60k</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">₹20k–₹80k</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">₹1.4L+</td></tr>
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">Per-user monthly fees</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">None — ever</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">₹1.3k–₹5k/user</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">₹1.6k–₹3.2k/user</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">₹3.5k–₹9k/user</td></tr>
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">WhatsApp integration</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">✅ Free, no API</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Paid add-on</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">3rd-party</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">3rd-party only</td></tr>
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">Study abroad intake alerts</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">✅ 35+ countries</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-lose">❌ Doesn't exist</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-lose">❌ Doesn't exist</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-lose">❌ Doesn't exist</td></tr>
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">Setup time</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">Under 30 min</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">3–10 days</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Weeks + IT</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">1–3 days</td></tr>
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">14-stage overseas pipeline</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">✅ Ready day one</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-lose">Build from scratch</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-lose">Build from scratch</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-lose">Build from scratch</td></tr>
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">Revenue forecast report</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">✅ All plans</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Pro plan only</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Enterprise only</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Pro+ (₹6.5k+/mo)</td></tr>
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">Counsellor comparison</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">✅ One click</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Report builder</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Custom config</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Manual dashboards</td></tr>
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">Learning curve</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">Day one. None.</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">1–2 wks training</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Weeks + IT admin</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">2–5 days</td></tr>
-          <tr><td class="px-4 sm:px-7 py-3 sm:py-5 font-semibold text-slate-700">Hidden costs</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-win">None</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Partner fees, add-ons</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Implementation</td><td class="px-4 sm:px-7 py-3 sm:py-5 text-center border-l border-slate-100 cmp-neutral">Contacts pricing</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Why each competitor loses -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-7 mb-10 sm:mb-14">
-      <div class="reveal bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm">
-        <div class="sora font-bold text-slate-900 text-base sm:text-lg mb-3 sm:mb-4">Why Zoho loses for study abroad</div>
-        <p class="text-slate-500 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">Zoho CRM is genuinely powerful — for a salesperson selling SaaS or manufacturing goods. But you're not selling products. You're guiding students through a 6–18 month journey with intake calendars, visa timelines, and document collection.</p>
-        <p class="text-slate-500 leading-relaxed text-sm sm:text-base">At 10 counsellors on Zoho Standard, you're already at ₹1.56L/year before WhatsApp, add-ons, or a Zoho partner.</p>
+      <!-- Comparison table -->
+      <div class="cmp-wrap reveal" style="transition-delay:.08s;">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:.9rem 1.25rem;">Cost Factor</th>
+              <th class="col-applyiq">
+                ApplyIQ
+                <span class="col-sub">Study abroad specialist</span>
+              </th>
+              <th style="color:rgba(255,255,255,.55);">
+                Zoho CRM
+                <span class="col-sub">General enterprise CRM</span>
+              </th>
+              <th style="color:rgba(255,255,255,.55);">
+                Odoo
+                <span class="col-sub">ERP with CRM module</span>
+              </th>
+              <th style="color:rgba(255,255,255,.55);border-right:none;">
+                HubSpot
+                <span class="col-sub">Marketing + CRM</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Base cost (10 users/year)</td>
+              <td class="cmp-win">₹42,000 flat</td>
+              <td class="cmp-neutral">₹18k–₹60k</td>
+              <td class="cmp-neutral">₹20k–₹80k</td>
+              <td class="cmp-neutral">₹1.4L+</td>
+            </tr>
+            <tr>
+              <td>Per-user monthly fees</td>
+              <td class="cmp-win">None — ever</td>
+              <td class="cmp-neutral">₹1.3k–₹5k/user</td>
+              <td class="cmp-neutral">₹1.6k–₹3.2k/user</td>
+              <td class="cmp-neutral">₹3.5k–₹9k/user</td>
+            </tr>
+            <tr>
+              <td>WhatsApp integration</td>
+              <td class="cmp-win">✅ Free, no API</td>
+              <td class="cmp-neutral">Paid add-on</td>
+              <td class="cmp-neutral">3rd-party</td>
+              <td class="cmp-neutral">3rd-party only</td>
+            </tr>
+            <tr>
+              <td>Study abroad intake alerts</td>
+              <td class="cmp-win">✅ 35+ countries</td>
+              <td class="cmp-lose">❌ Doesn't exist</td>
+              <td class="cmp-lose">❌ Doesn't exist</td>
+              <td class="cmp-lose">❌ Doesn't exist</td>
+            </tr>
+            <tr>
+              <td>Setup time</td>
+              <td class="cmp-win">Under 30 min</td>
+              <td class="cmp-neutral">3–10 days</td>
+              <td class="cmp-neutral">Weeks + IT</td>
+              <td class="cmp-neutral">1–3 days</td>
+            </tr>
+            <tr>
+              <td>14-stage overseas pipeline</td>
+              <td class="cmp-win">✅ Ready day one</td>
+              <td class="cmp-lose">Build from scratch</td>
+              <td class="cmp-lose">Build from scratch</td>
+              <td class="cmp-lose">Build from scratch</td>
+            </tr>
+            <tr>
+              <td>Revenue forecast report</td>
+              <td class="cmp-win">✅ All plans</td>
+              <td class="cmp-neutral">Pro plan only</td>
+              <td class="cmp-neutral">Enterprise only</td>
+              <td class="cmp-neutral">Pro+ (₹6.5k+/mo)</td>
+            </tr>
+            <tr>
+              <td>Counsellor comparison</td>
+              <td class="cmp-win">✅ One click</td>
+              <td class="cmp-neutral">Report builder</td>
+              <td class="cmp-neutral">Custom config</td>
+              <td class="cmp-neutral">Manual dashboards</td>
+            </tr>
+            <tr>
+              <td>Learning curve</td>
+              <td class="cmp-win">Day one. None.</td>
+              <td class="cmp-neutral">1–2 wks training</td>
+              <td class="cmp-neutral">Weeks + IT admin</td>
+              <td class="cmp-neutral">2–5 days</td>
+            </tr>
+            <tr>
+              <td>Hidden costs</td>
+              <td class="cmp-win">None</td>
+              <td class="cmp-neutral">Partner fees, add-ons</td>
+              <td class="cmp-neutral">Implementation</td>
+              <td class="cmp-neutral">Contacts pricing</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="reveal bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm">
-        <div class="sora font-bold text-slate-900 text-base sm:text-lg mb-3 sm:mb-4">Why Odoo loses for study abroad</div>
-        <p class="text-slate-500 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">Odoo is an ERP — designed for businesses managing inventory, manufacturing, and HR simultaneously. Running Odoo for a consultancy is like hiring a construction crane to move a piece of furniture.</p>
-        <p class="text-slate-500 leading-relaxed text-sm sm:text-base">Implementation alone can cost ₹50,000–₹3,00,000. And you still won't have intake alerts or a counsellor comparison report without custom development.</p>
-      </div>
-      <div class="reveal bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm">
-        <div class="sora font-bold text-slate-900 text-base sm:text-lg mb-3 sm:mb-4">Why HubSpot loses for study abroad</div>
-        <p class="text-slate-500 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">HubSpot's free CRM is genuinely great — for basic contact management. But the moment you need reports or team management, you're on Starter at minimum and rapidly climbing to Professional (₹1,20,000+/year).</p>
-        <p class="text-slate-500 leading-relaxed text-sm sm:text-base">HubSpot has no concept of study abroad pipelines, intake windows, or counsellor accountability reports.</p>
-      </div>
-    </div>
 
-    <!-- Verdict -->
-    <div class="reveal bg-sky-600 rounded-2xl sm:rounded-3xl p-8 sm:p-10 md:p-14 text-white text-center">
-      <div class="sora text-2xl sm:text-3xl md:text-4xl font-extrabold mb-4 sm:mb-5">The Verdict</div>
-      <p class="lead-text text-sky-100 leading-relaxed max-w-3xl mx-auto mb-6 sm:mb-8">ApplyIQ is not the most powerful CRM in the world. But it is the most useful CRM for a study abroad consultancy in India. It does one job — study abroad lead management — and it does it better than any general-purpose platform at any price point.</p>
-      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-        <a href="{{ url_for('signup') }}" class="inline-flex items-center justify-center gap-2 px-7 sm:px-9 py-4 text-sm sm:text-base font-extrabold text-sky-700 bg-white rounded-full hover:bg-sky-50 transition shadow-xl">
-          Try Free for 14 Days <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-        </a>
-        <a href="tel:+916238461560" class="inline-flex items-center justify-center px-7 sm:px-9 py-4 text-sm sm:text-base font-semibold text-white border border-white/30 rounded-full hover:border-white hover:bg-white/10 transition">
-          📞 Call +91 62384 61560
-        </a>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-
-<!-- ════════════════════════════════════════════════════
-     WHAT'S INCLUDED — FEATURE CHECKLIST
-════════════════════════════════════════════════════ -->
-<section id="included" class="py-14 sm:py-20 md:py-28 bg-white">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10">
-
-    <div class="text-center mb-10 sm:mb-16 reveal">
-      <div class="inline-block px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs sm:text-sm font-bold uppercase tracking-wide mb-4 sm:mb-5">Every Plan · No Exceptions</div>
-      <h2 class="sora section-h2 font-extrabold tracking-tighter text-slate-950 mb-4 sm:mb-5">Everything. Included. Always.</h2>
-      <p class="lead-text text-slate-500 max-w-xl mx-auto">There are no "Plus" or "Pro" tiers. Every subscriber on every plan gets the complete platform.</p>
-    </div>
-
-    <div class="reveal grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-      <!-- Left column -->
-      <div class="space-y-3 sm:space-y-4">
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">🎯</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">14-Stage Study Abroad Pipeline</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Pre-built with every stage your consultancy actually uses. From first inquiry to visa received.</div></div>
+      <!-- Competitor write-ups -->
+      <div class="comp-grid reveal" style="transition-delay:.1s;">
+        <div class="comp-card">
+          <div class="comp-head">Why it loses for study abroad</div>
+          <div class="comp-title">Zoho CRM</div>
+          <div class="comp-body">Zoho CRM is genuinely powerful — for a salesperson selling SaaS or manufacturing goods. But you're not selling products. You're guiding students through a 6–18 month journey with intake calendars, visa timelines, and document collection. At 10 counsellors on Zoho Standard, you're already at ₹1.56L/year before WhatsApp, add-ons, or a Zoho partner.</div>
         </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">⚠️</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">Intake Window Alerts (35+ countries)</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Automatic red/amber flags 30 and 75 days before intake deadlines for every country you work with.</div></div>
+        <div class="comp-card">
+          <div class="comp-head">Why it loses for study abroad</div>
+          <div class="comp-title">Odoo</div>
+          <div class="comp-body">Odoo is an ERP — designed for businesses managing inventory, manufacturing, and HR simultaneously. Running Odoo for a consultancy is like hiring a construction crane to move a piece of furniture. Implementation alone can cost ₹50,000–₹3,00,000. And you still won't have intake alerts or a counsellor comparison report without custom development.</div>
         </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">🔥</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">AI Lead Scoring</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Hot / Warm / Cold scoring (0–100) based on interactions, registration, documents, and intake proximity.</div></div>
-        </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">💬</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">WhatsApp Templates (No API)</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">One-click messages for first contact, follow-up, document request, and visa congratulations. Works on any phone today.</div></div>
-        </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">📥</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">CSV Bulk Import</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Migrate your entire Excel database in minutes. Auto-assign, duplicate detection, row-by-row error reporting.</div></div>
-        </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">📋</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">Full Audit Trail</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Every action logged with timestamp, IP, and user. Resolve disputes in 30 seconds. Your legal protection.</div></div>
+        <div class="comp-card">
+          <div class="comp-head">Why it loses for study abroad</div>
+          <div class="comp-title">HubSpot</div>
+          <div class="comp-body">HubSpot's free CRM is genuinely great — for basic contact management. But the moment you need reports or team management, you're on Starter at minimum and rapidly climbing to Professional (₹1,20,000+/year). HubSpot has no concept of study abroad pipelines, intake windows, or counsellor accountability reports.</div>
         </div>
       </div>
-      <!-- Right column -->
-      <div class="space-y-3 sm:space-y-4">
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">📊</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">8 Purpose-Built Reports</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Conversion funnel, counsellor comparison, lead source ROI, revenue forecast, activity heatmap, analytics, individual, audit trail.</div></div>
-        </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">🏆</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">Gamified Leaderboard</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Real-time points-based counsellor rankings. Motivates your team without a single spreadsheet from management.</div></div>
-        </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">🔒</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">Complete Tenant Data Isolation</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Your leads are separated at the database level from every other consultancy. Bank-grade data privacy.</div></div>
-        </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">🚀</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">Stale Lead Rescue Dashboard</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Dedicated view of every lead with no interaction in 3, 7, 14, or 30 days — grouped by counsellor. Rescue revenue daily.</div></div>
-        </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">📅</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">Follow-up Scheduler</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Schedule callbacks with notes. Dashboard shows overdue follow-ups every morning, ranked by urgency.</div></div>
-        </div>
-        <div class="bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-slate-100 flex gap-3 sm:gap-4">
-          <div class="text-xl sm:text-2xl shrink-0">👤</div>
-          <div><div class="font-bold text-slate-900 mb-1 text-sm sm:text-base">Role-Based Access Control</div><div class="text-slate-500 text-xs sm:text-sm leading-relaxed">Admins see everything. Counsellors see only their own leads. Clean, focused, and secure for every team size.</div></div>
-        </div>
-      </div>
-    </div>
 
-  </div>
-</section>
-
-
-<!-- ════════════════════════════════════════════════════
-     FAQ
-════════════════════════════════════════════════════ -->
-<section id="faq" class="py-14 sm:py-20 md:py-28 bg-slate-50">
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-10">
-
-    <div class="text-center mb-10 sm:mb-16 reveal">
-      <h2 class="sora section-h2 font-extrabold tracking-tighter text-slate-950 mb-3 sm:mb-4">Frequently Asked Questions</h2>
-      <p class="lead-text text-slate-500">Answers before you commit</p>
-    </div>
-
-    <div class="space-y-3 sm:space-y-4">
-
-      <div class="reveal bg-white rounded-xl sm:rounded-2xl border border-slate-100 overflow-hidden">
-        <button class="faq-btn w-full flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 text-left font-semibold text-slate-900 hover:text-sky-600 transition text-sm sm:text-base">
-          Is there a free trial? Do I need a credit card?
-          <svg class="faq-chevron w-5 h-5 text-slate-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div class="faq-body px-5 sm:px-7 text-slate-500 leading-relaxed text-sm sm:text-base">Yes. 14 days completely free with full access to every feature — no credit card required, no questions asked. After the trial, choose any plan or contact us to extend while you evaluate.</div>
-      </div>
-
-      <div class="reveal bg-white rounded-xl sm:rounded-2xl border border-slate-100 overflow-hidden">
-        <button class="faq-btn w-full flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 text-left font-semibold text-slate-900 hover:text-sky-600 transition text-sm sm:text-base">
-          What exactly does "10+ users" mean?
-          <svg class="faq-chevron w-5 h-5 text-slate-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div class="faq-body px-5 sm:px-7 text-slate-500 leading-relaxed text-sm sm:text-base">Your subscription includes 1 Super Admin and supports 10 or more counsellor accounts with zero per-user monthly fees. You pay once — flat — and add team members freely as your consultancy grows. There is no "per seat" charge ever.</div>
-      </div>
-
-      <div class="reveal bg-white rounded-xl sm:rounded-2xl border border-slate-100 overflow-hidden">
-        <button class="faq-btn w-full flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 text-left font-semibold text-slate-900 hover:text-sky-600 transition text-sm sm:text-base">
-          Can we migrate our existing leads from Excel or WhatsApp?
-          <svg class="faq-chevron w-5 h-5 text-slate-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div class="faq-body px-5 sm:px-7 text-slate-500 leading-relaxed text-sm sm:text-base">Yes. Export your Excel as a CSV, upload it, and ApplyIQ auto-assigns leads to counsellors, detects duplicates by phone and email, and gives row-by-row error reporting. Most consultancies complete their full data migration in under an hour on their first day.</div>
-      </div>
-
-      <div class="reveal bg-white rounded-xl sm:rounded-2xl border border-slate-100 overflow-hidden">
-        <button class="faq-btn w-full flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 text-left font-semibold text-slate-900 hover:text-sky-600 transition text-sm sm:text-base">
-          Is my data private from other consultancies on the platform?
-          <svg class="faq-chevron w-5 h-5 text-slate-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div class="faq-body px-5 sm:px-7 text-slate-500 leading-relaxed text-sm sm:text-base">Absolutely. ApplyIQ uses enterprise multi-tenant database architecture — your leads, users, and reports are separated at the database row level from every other consultancy. No other company can access your data under any circumstance.</div>
-      </div>
-
-      <div class="reveal bg-white rounded-xl sm:rounded-2xl border border-slate-100 overflow-hidden">
-        <button class="faq-btn w-full flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 text-left font-semibold text-slate-900 hover:text-sky-600 transition text-sm sm:text-base">
-          What happens to our data when the subscription expires?
-          <svg class="faq-chevron w-5 h-5 text-slate-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div class="faq-body px-5 sm:px-7 text-slate-500 leading-relaxed text-sm sm:text-base">Your data is never deleted. Platform access pauses until renewal. You can request a full CSV export of all your leads and data at any time — before, during, or after your subscription. Your data belongs to you.</div>
-      </div>
-
-      <div class="reveal bg-white rounded-xl sm:rounded-2xl border border-slate-100 overflow-hidden">
-        <button class="faq-btn w-full flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 text-left font-semibold text-slate-900 hover:text-sky-600 transition text-sm sm:text-base">
-          Can I switch from Quarterly to Annual mid-year?
-          <svg class="faq-chevron w-5 h-5 text-slate-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div class="faq-body px-5 sm:px-7 text-slate-500 leading-relaxed text-sm sm:text-base">Yes, at any point. Contact us and we'll calculate a pro-rated upgrade. Switching to Annual always saves money and we make the transition immediate and seamless.</div>
-      </div>
-
-      <div class="reveal bg-white rounded-xl sm:rounded-2xl border border-slate-100 overflow-hidden">
-        <button class="faq-btn w-full flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 text-left font-semibold text-slate-900 hover:text-sky-600 transition text-sm sm:text-base">
-          Do I need any technical skills or IT staff to set this up?
-          <svg class="faq-chevron w-5 h-5 text-slate-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div class="faq-body px-5 sm:px-7 text-slate-500 leading-relaxed text-sm sm:text-base">None at all. If you can use WhatsApp and a basic smartphone, you can use ApplyIQ from day one. No IT staff, no certified partner, no training programme. Most teams are fully operational within the first day.</div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-
-<!-- ════════════════════════════════════════════════════
-     CONTACT + FINAL CTA
-════════════════════════════════════════════════════ -->
-<section id="contact" class="py-14 sm:py-20 md:py-28 bg-white">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10">
-
-    <div class="text-center mb-10 sm:mb-16 reveal">
-      <div class="inline-block px-4 py-1.5 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs sm:text-sm font-bold uppercase tracking-wide mb-4 sm:mb-5">Still Have Questions?</div>
-      <h2 class="sora section-h2 font-extrabold tracking-tighter text-slate-950 mb-4 sm:mb-5">Talk to a Real Person</h2>
-      <p class="lead-text text-slate-500 max-w-xl mx-auto">No chatbot. No support ticket queue. Call or WhatsApp Jakob directly and get real answers about whether ApplyIQ is right for your consultancy.</p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 mb-10 sm:mb-14">
-      <div class="reveal bg-sky-600 rounded-2xl sm:rounded-3xl p-7 sm:p-10 text-white card-lift">
-        <div class="text-3xl sm:text-4xl mb-4 sm:mb-6">📞</div>
-        <h3 class="sora text-xl sm:text-2xl font-bold mb-2 sm:mb-3">Call or WhatsApp</h3>
-        <p class="text-sky-200 leading-relaxed mb-5 sm:mb-7 text-sm sm:text-base">Available Monday to Saturday, 9am – 7pm IST. Speak directly with Jakob, the founder. No scripted sales pitch — just honest answers.</p>
-        <a href="tel:+916238461560" class="block text-2xl sm:text-3xl font-extrabold text-white hover:text-sky-200 transition mb-3 sm:mb-4">
-          +91 62384 61560
-        </a>
-        <a href="https://wa.me/916238461560?text=Hi%20Jakob%2C%20I%27m%20interested%20in%20ApplyIQ%20for%20my%20study%20abroad%20consultancy." target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 sm:px-6 py-3 bg-white/15 hover:bg-white/25 rounded-full text-sm font-bold text-white transition">
-          💬 Open WhatsApp Chat
-        </a>
-      </div>
-
-      <div class="reveal bg-slate-50 rounded-2xl sm:rounded-3xl p-7 sm:p-10 border border-slate-100 card-lift">
-        <div class="text-3xl sm:text-4xl mb-4 sm:mb-6">✉️</div>
-        <h3 class="sora text-xl sm:text-2xl font-bold text-slate-900 mb-2 sm:mb-3">Email Us</h3>
-        <p class="text-slate-500 leading-relaxed mb-5 sm:mb-7 text-sm sm:text-base">Send your questions, request a personalised demo, or ask for a walkthrough of how ApplyIQ would work for your specific consultancy setup. We reply within a few hours on working days.</p>
-        <a href="mailto:jakobvargis@zohomail.in" class="block text-lg sm:text-xl font-extrabold text-sky-600 hover:text-sky-700 transition break-all mb-5 sm:mb-6">
-          jakobvargis@zohomail.in
-        </a>
-        <a href="{{ url_for('signup') }}" class="inline-flex items-center gap-2 px-5 sm:px-6 py-3.5 bg-slate-950 text-white rounded-full text-sm font-bold hover:bg-sky-600 transition">
-          Start your free trial now →
-        </a>
-      </div>
-    </div>
-
-    <!-- Final ROI reminder -->
-    <div class="reveal bg-slate-950 rounded-2xl sm:rounded-3xl p-8 sm:p-10 md:p-14 text-white text-center">
-      <div class="sora text-2xl sm:text-3xl md:text-4xl font-extrabold mb-4 sm:mb-5">₹117 per day. That's All It Costs.</div>
-      <p class="lead-text text-slate-400 leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">The Annual plan works out to less than ₹117/day. If ApplyIQ helps you convert just one extra student per month — at ₹20,000 commission — you've paid for 14 years of the software. The math is undeniable.</p>
-      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-        <a href="{{ url_for('signup') }}" class="inline-flex items-center justify-center gap-2 px-8 sm:px-10 py-4 text-base sm:text-lg font-extrabold text-slate-950 bg-white rounded-full hover:bg-sky-400 hover:text-white transition shadow-2xl">
-          Start Free — No Card Needed <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-        </a>
-        <a href="tel:+916238461560" class="inline-flex items-center justify-center px-8 sm:px-10 py-4 text-base sm:text-lg font-semibold text-white border border-white/20 rounded-full hover:border-sky-400 hover:text-sky-400 transition">
-          📞 +91 62384 61560
-        </a>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-
-<!-- ════════════════════════════════════════════════════
-     FOOTER
-════════════════════════════════════════════════════ -->
-<footer class="bg-slate-950 border-t border-slate-800">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-14">
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 sm:gap-10 mb-8 sm:mb-10">
-      <div class="sm:col-span-2 md:col-span-1">
-        <a href="{{ url_for('landing') }}" class="inline-flex items-center gap-2 mb-4 sm:mb-5">
-          <div class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl bg-sky-600">
-            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          </div>
-          <span class="sora font-bold text-lg sm:text-xl text-white tracking-tighter">ApplyIQ<span class="text-sky-400">Leads</span></span>
-        </a>
-        <p class="text-slate-400 leading-relaxed text-sm">Purpose-built lead management for study abroad consultancies and overseas education institutes across Kerala and India.</p>
-      </div>
-      <div>
-        <div class="sora font-semibold text-white mb-4 sm:mb-5 text-sm uppercase tracking-wide">On This Page</div>
-        <div class="space-y-2.5 sm:space-y-3">
-          <a href="#plans"    class="block text-slate-400 hover:text-sky-400 transition text-sm">Pricing Plans</a>
-          <a href="#compare"  class="block text-slate-400 hover:text-sky-400 transition text-sm">vs Zoho / Odoo / HubSpot</a>
-          <a href="#included" class="block text-slate-400 hover:text-sky-400 transition text-sm">What's Included</a>
-          <a href="#faq"      class="block text-slate-400 hover:text-sky-400 transition text-sm">FAQ</a>
-          <a href="{{ url_for('landing') }}" class="block text-slate-400 hover:text-sky-400 transition text-sm">← Back to Home</a>
-        </div>
-      </div>
-      <div>
-        <div class="sora font-semibold text-white mb-4 sm:mb-5 text-sm uppercase tracking-wide">Contact</div>
-        <div class="space-y-3 sm:space-y-4">
-          <a href="tel:+916238461560" class="flex items-center gap-2 sm:gap-3 text-slate-400 hover:text-sky-400 transition">
-            <span class="text-base sm:text-lg">📞</span>
-            <div>
-              <div class="font-semibold text-slate-300 text-sm">+91 62384 61560</div>
-              <div class="text-xs text-slate-500">Mon–Sat · 9am–7pm IST</div>
-            </div>
+      <!-- Verdict -->
+      <div class="verdict-box reveal" style="transition-delay:.12s;">
+        <span class="kicker-wr">The Verdict</span>
+        <div class="v-title">Built For One Job.<br>Better Than Any General Platform.</div>
+        <p class="v-body">ApplyIQ is not the most powerful CRM in the world. But it is the most useful CRM for a study abroad consultancy in India. It does one job — study abroad lead management — and it does it better than any general-purpose platform at any price point.</p>
+        <div class="verdict-cta-row">
+          <a href="{{ url_for('signup') }}" class="btn-inverse">
+            Try Free for 14 Days
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5-5 5M6 12h12"/></svg>
           </a>
-          <a href="mailto:jakobvargis@zohomail.in" class="flex items-center gap-2 sm:gap-3 text-slate-400 hover:text-sky-400 transition">
-            <span class="text-base sm:text-lg">✉️</span>
-            <div>
-              <div class="font-semibold text-slate-300 break-all text-sm">jakobvargis@zohomail.in</div>
-              <div class="text-xs text-slate-500">Reply within a few hours</div>
-            </div>
-          </a>
-          <a href="https://wa.me/916238461560" target="_blank" class="flex items-center gap-2 sm:gap-3 text-slate-400 hover:text-sky-400 transition">
-            <span class="text-base sm:text-lg">💬</span>
-            <div class="font-semibold text-slate-300 text-sm">WhatsApp Chat</div>
-          </a>
+          <a href="tel:+916238461560" class="btn-outline-white">📞 Call +91 62384 61560</a>
         </div>
       </div>
+
     </div>
-    <div class="border-t border-slate-800 pt-6 sm:pt-8 text-center">
-      <p class="text-xs sm:text-sm text-slate-500">© 2025 ApplyIQ. All rights reserved.</p>
+  </section>
+
+
+  <!-- ════════════════════
+       WHAT'S INCLUDED
+  ════════════════════ -->
+  <section id="included" class="wsj-section" style="background:var(--bg-warm);">
+    <div class="container">
+
+      <div class="section-head">
+        <span class="section-head-title">Platform — Every Plan · No Exceptions</span>
+        <div class="section-head-rule"></div>
+      </div>
+
+      <h2 class="display-lg reveal" style="margin-bottom:.75rem;">Everything. Included. Always.</h2>
+      <p class="deck reveal" style="max-width:520px;margin-bottom:2.5rem;transition-delay:.06s;">There are no "Plus" or "Pro" tiers. Every subscriber on every plan gets the complete platform — from day one.</p>
+
+      <div class="incl-grid reveal" style="transition-delay:.08s;">
+        <div class="incl-cell">
+          <div class="incl-icon">🎯</div>
+          <div>
+            <div class="incl-name">14-Stage Study Abroad Pipeline</div>
+            <div class="incl-body">Pre-built with every stage your consultancy actually uses. From first inquiry to visa received.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">📊</div>
+          <div>
+            <div class="incl-name">8 Purpose-Built Reports</div>
+            <div class="incl-body">Conversion funnel, counsellor comparison, lead source ROI, revenue forecast, activity heatmap, analytics, individual, audit trail.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">⚠️</div>
+          <div>
+            <div class="incl-name">Intake Window Alerts (35+ countries)</div>
+            <div class="incl-body">Automatic red/amber flags 30 and 75 days before intake deadlines for every country you work with.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">🏆</div>
+          <div>
+            <div class="incl-name">Gamified Team Leaderboard</div>
+            <div class="incl-body">Real-time points-based counsellor rankings. Motivates your team without a single spreadsheet from management.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">🔥</div>
+          <div>
+            <div class="incl-name">AI Lead Scoring</div>
+            <div class="incl-body">Hot / Warm / Cold scoring (0–100) based on interactions, registration, documents, and intake proximity.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">🔒</div>
+          <div>
+            <div class="incl-name">Complete Tenant Data Isolation</div>
+            <div class="incl-body">Your leads are separated at the database level from every other consultancy. Bank-grade data privacy.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">💬</div>
+          <div>
+            <div class="incl-name">WhatsApp Templates (No API)</div>
+            <div class="incl-body">One-click messages for first contact, follow-up, document request, and visa congratulations. Works on any phone today.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">🚀</div>
+          <div>
+            <div class="incl-name">Stale Lead Rescue Dashboard</div>
+            <div class="incl-body">Dedicated view of every lead with no interaction in 3, 7, 14, or 30 days — grouped by counsellor. Rescue revenue daily.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">📥</div>
+          <div>
+            <div class="incl-name">CSV Bulk Import</div>
+            <div class="incl-body">Migrate your entire Excel database in minutes. Auto-assign, duplicate detection, row-by-row error reporting.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">📅</div>
+          <div>
+            <div class="incl-name">Follow-up Scheduler</div>
+            <div class="incl-body">Schedule callbacks with notes. Dashboard shows overdue follow-ups every morning, ranked by urgency.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">📋</div>
+          <div>
+            <div class="incl-name">Full Audit Trail</div>
+            <div class="incl-body">Every action logged with timestamp, IP, and user. Resolve disputes in 30 seconds. Your legal protection.</div>
+          </div>
+        </div>
+        <div class="incl-cell">
+          <div class="incl-icon">👤</div>
+          <div>
+            <div class="incl-name">Role-Based Access Control</div>
+            <div class="incl-body">Admins see everything. Counsellors see only their own leads. Clean, focused, and secure for every team size.</div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
-</footer>
+  </section>
 
 
-<script>
-(function(){
-  // ── Mobile nav toggle ──
-  var btn  = document.getElementById('mob-btn');
-  var menu = document.getElementById('mob-menu');
-  if(btn && menu){
-    btn.addEventListener('click', function(){ menu.classList.toggle('open'); });
-  }
+  <!-- ════════════════════
+       FAQ
+  ════════════════════ -->
+  <section id="faq" class="wsj-section" style="background:var(--bg);">
+    <div class="container" style="max-width:820px;">
 
-  // ── Smooth scroll ──
-  document.querySelectorAll('a[href^="#"]').forEach(function(a){
-    a.addEventListener('click', function(e){
-      var target = document.querySelector(a.getAttribute('href'));
-      if(target){
-        e.preventDefault();
-        target.scrollIntoView({ behavior:'smooth', block:'start' });
-        if(menu) menu.classList.remove('open');
-      }
+      <div class="section-head">
+        <span class="section-head-title">FAQ — Frequently Asked Questions</span>
+        <div class="section-head-rule"></div>
+      </div>
+
+      <h2 class="display-lg reveal" style="margin-bottom:.75rem;">Answers Before You Commit</h2>
+      <p class="deck reveal" style="margin-bottom:2rem;transition-delay:.06s;">Everything you need to know before starting your trial.</p>
+
+      <div class="faq-list reveal" style="transition-delay:.08s;">
+
+        <div class="faq-item">
+          <button class="faq-btn">
+            Is there a free trial? Do I need a credit card?
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-body">Yes. 14 days completely free with full access to every feature — no credit card required, no questions asked. After the trial, choose any plan or contact us to extend while you evaluate.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-btn">
+            What exactly does "10+ users" mean?
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-body">Your subscription includes 1 Super Admin and supports 10 or more counsellor accounts with zero per-user monthly fees. You pay once — flat — and add team members freely as your consultancy grows. There is no "per seat" charge ever.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-btn">
+            Can we migrate our existing leads from Excel or WhatsApp?
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-body">Yes. Export your Excel as a CSV, upload it, and ApplyIQ auto-assigns leads to counsellors, detects duplicates by phone and email, and gives row-by-row error reporting. Most consultancies complete their full data migration in under an hour on their first day.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-btn">
+            Is my data private from other consultancies on the platform?
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-body">Absolutely. ApplyIQ uses enterprise multi-tenant database architecture — your leads, users, and reports are separated at the database row level from every other consultancy. No other company can access your data under any circumstance.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-btn">
+            What happens to our data when the subscription expires?
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-body">Your data is never deleted. Platform access pauses until renewal. You can request a full CSV export of all your leads and data at any time — before, during, or after your subscription. Your data belongs to you.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-btn">
+            Can I switch from Quarterly to Annual mid-year?
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-body">Yes, at any point. Contact us and we'll calculate a pro-rated upgrade. Switching to Annual always saves money and we make the transition immediate and seamless.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-btn">
+            Do I need any technical skills or IT staff to set this up?
+            <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="faq-body">None at all. If you can use WhatsApp and a basic smartphone, you can use ApplyIQ from day one. No IT staff, no certified partner, no training programme. Most teams are fully operational within the first day.</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════
+       CONTACT
+  ════════════════════ -->
+  <section id="contact" class="wsj-section" style="background:var(--bg-warm);">
+    <div class="container">
+
+      <div class="section-head">
+        <span class="section-head-title">Correspondence — Talk to a Real Person</span>
+        <div class="section-head-rule"></div>
+      </div>
+
+      <h2 class="display-lg reveal" style="margin-bottom:.75rem;">No Chatbot.<br>No Ticket Queue.</h2>
+      <p class="deck reveal" style="max-width:520px;margin-bottom:2.5rem;transition-delay:.06s;">Call or WhatsApp Jakob directly and get real answers about whether ApplyIQ is right for your consultancy.</p>
+
+      <div class="contact-grid reveal" style="transition-delay:.08s;">
+        <div class="contact-col">
+          <div class="contact-col-icon">📞</div>
+          <h3 class="contact-col-title">Call or WhatsApp</h3>
+          <p class="contact-col-deck">Available Monday to Saturday, 9am – 7pm IST. Speak directly with Jakob, the founder. No scripted sales pitch — just honest answers.</p>
+          <a href="tel:+916238461560" class="contact-link-big">+91 62384 61560</a>
+          <a href="https://wa.me/916238461560?text=Hi%20Jakob%2C%20I%27m%20interested%20in%20ApplyIQ%20for%20my%20study%20abroad%20consultancy." target="_blank" rel="noopener" class="contact-link-sm">💬 Open WhatsApp Chat →</a>
+        </div>
+        <div class="contact-divider"></div>
+        <div class="contact-col">
+          <div class="contact-col-icon">✉️</div>
+          <h3 class="contact-col-title">Email Us</h3>
+          <p class="contact-col-deck">Send your questions, request a personalised demo, or ask for a walkthrough of how ApplyIQ would work for your specific consultancy setup. We reply within a few hours on working days.</p>
+          <a href="mailto:jakobvargis@zohomail.in" class="contact-link-big" style="font-size:1.05rem;word-break:break-all;">jakobvargis@zohomail.in</a>
+          <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--rule);">
+            <a href="{{ url_for('signup') }}" class="btn-primary" style="font-size:.68rem;">Start Your Free Trial Now →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final ROI dark box -->
+      <div class="cta-dark-box reveal" style="transition-delay:.1s;">
+        <span class="ctad-kicker">The Math Is Undeniable</span>
+        <div class="ctad-title">₹117 per day.<br>That's All It Costs.</div>
+        <p class="ctad-body">The Annual plan works out to less than ₹117/day. If ApplyIQ helps you convert just one extra student per month — at ₹20,000 commission — you've paid for 14 years of the software.</p>
+        <div class="cta-dark-row">
+          <a href="{{ url_for('signup') }}" class="btn-inverse">
+            Start Free — No Card Needed
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5-5 5M6 12h12"/></svg>
+          </a>
+          <a href="tel:+916238461560" class="btn-outline-white">📞 +91 62384 61560</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ════════════════════
+       FOOTER
+  ════════════════════ -->
+  <footer class="wsj-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <a href="{{ url_for('landing') }}" style="text-decoration:none;">
+            <div class="footer-brand-name">ApplyIQ<span>Leads</span></div>
+          </a>
+          <div class="footer-brand-sub">Study Abroad CRM · Kerala &amp; India</div>
+          <p class="footer-brand-desc">Purpose-built lead management for study abroad consultancies and overseas education institutes across Kerala and India.</p>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-head">On This Page</div>
+          <a href="#plans">Pricing Plans</a>
+          <a href="#compare">vs Zoho / Odoo / HubSpot</a>
+          <a href="#included">What's Included</a>
+          <a href="#faq">FAQ</a>
+          <a href="{{ url_for('landing') }}">← Back to Home</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-head">Contact</div>
+          <a href="tel:+916238461560">📞 +91 62384 61560</a>
+          <a href="mailto:jakobvargis@zohomail.in" style="word-break:break-all;">✉️ jakobvargis@zohomail.in</a>
+          <a href="https://wa.me/916238461560" target="_blank">💬 WhatsApp</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">© 2025 ApplyIQ. All rights reserved.</span>
+        <a href="{{ url_for('developer_login') }}" class="footer-dev">Developer Login</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+  (function () {
+    // Mobile nav toggle
+    var btn  = document.getElementById('mob-btn');
+    var menu = document.getElementById('mob-menu');
+    if (btn && menu) {
+      btn.addEventListener('click', function () { menu.classList.toggle('open'); });
+    }
+
+    // Smooth scroll + close menu
+    document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (menu) menu.classList.remove('open');
+        }
+      });
     });
-  });
 
-  // ── Scroll reveal ──
-  var ro = new IntersectionObserver(function(entries){
-    entries.forEach(function(en){ if(en.isIntersecting) en.target.classList.add('in'); });
-  }, { threshold: 0.06 });
-  document.querySelectorAll('.reveal').forEach(function(el){ ro.observe(el); });
+    // Scroll reveal
+    var ro = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) en.target.classList.add('in'); });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.reveal').forEach(function (el) { ro.observe(el); });
 
-  // ── FAQ accordion ──
-  document.querySelectorAll('.faq-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var body    = btn.nextElementSibling;
-      var chevron = btn.querySelector('.faq-chevron');
-      var isOpen  = body.classList.contains('open');
-      // Close all
-      document.querySelectorAll('.faq-body').forEach(function(b){ b.classList.remove('open'); });
-      document.querySelectorAll('.faq-chevron').forEach(function(c){ c.classList.remove('rotated'); });
-      // Open clicked if it was closed
-      if(!isOpen){
-        body.classList.add('open');
-        if(chevron) chevron.classList.add('rotated');
-      }
+    // FAQ accordion
+    document.querySelectorAll('.faq-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var body    = btn.nextElementSibling;
+        var chevron = btn.querySelector('.faq-chevron');
+        var isOpen  = body.classList.contains('open');
+        document.querySelectorAll('.faq-body').forEach(function (b) { b.classList.remove('open'); });
+        document.querySelectorAll('.faq-chevron').forEach(function (c) { c.classList.remove('rotated'); });
+        if (!isOpen) { body.classList.add('open'); if (chevron) chevron.classList.add('rotated'); }
+      });
     });
-  });
-
-})();
-</script>
+  })();
+  </script>
 
 </body>
 </html>
