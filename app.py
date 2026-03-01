@@ -1246,7 +1246,7 @@ def update_lead_scores_bulk(lead_ids, company_id, scores_dict):
     conn.commit()
     release_db_connection(conn)
 
-def calculate_lead_scores_bulk(lead_ids, company_id=None):
+def calculate_lead_scores_bulk(lead_ids, company_id=None, user_id=None):
     """
     Bulk scoring helper to avoid N+1 queries in list/report views.
     Returns a mapping: {lead_id: (score, category)}.
@@ -1263,7 +1263,15 @@ def calculate_lead_scores_bulk(lead_ids, company_id=None):
     cursor = conn.cursor()
 
     # Single comprehensive query to get all data at once
-    cursor.execute("""
+    # Add user filtering if user_id is provided
+    user_filter_sql = ""
+    query_params = [company_id, lead_ids, company_id, lead_ids, company_id, lead_ids]
+    
+    if user_id:
+        user_filter_sql = "AND l.assigned_user_id = %s"
+        query_params.append(user_id)
+    
+    cursor.execute(f"""
         SELECT l.*, 
                COALESCE(d.doc_count, 0) as doc_count,
                COALESCE(i.interaction_count, 0) as interaction_count,
@@ -1279,8 +1287,8 @@ def calculate_lead_scores_bulk(lead_ids, company_id=None):
             FROM interactions WHERE company_id = %s AND lead_id = ANY(%s)
             GROUP BY lead_id
         ) i ON l.id = i.lead_id
-        WHERE l.company_id = %s AND l.id = ANY(%s)
-    """, (company_id, lead_ids, company_id, lead_ids, company_id, lead_ids))
+        WHERE l.company_id = %s AND l.id = ANY(%s) {user_filter_sql}
+    """, query_params)
     
     leads_data = cursor.fetchall()
     
@@ -3677,10 +3685,10 @@ def user_report(user_id):
     # Get all lead IDs for bulk scoring
     cursor.execute(f"SELECT id FROM leads l WHERE l.company_id = %s AND l.assigned_user_id = %s {date_filter}", params)
     all_leads = cursor.fetchall()
-    lead_ids = [lead['id'] for lead in all_leads]
-    
-    # Bulk calculate scores for all leads at once
-    bulk_scores = calculate_lead_scores_bulk(lead_ids, session['company_id'])
+    lead_ids = [lead['id'] for lead in all_leads]    # Bulk calculate scores for all leads at once
+    # Pass user_id for proper filtering
+    user_id_for_scoring = session['user_id'] if session['role'] != 'super_admin' else None
+    bulk_scores = calculate_lead_scores_bulk(lead_ids, session['company_id'], user_id_for_scoring)
     
     # Count hot, warm, cold leads from bulk results
     hot_count = sum(1 for score, category in bulk_scores.values() if category == 'Hot')
@@ -5238,27 +5246,34 @@ def reports():
     
     stats = cursor.fetchone()
     
-    # Get interaction count
+    # Get interaction count - use separate params to avoid corruption
+    interaction_params = [session['company_id']]
+    
+    # Add date parameters if they exist
+    if period == 'custom' and start_date and end_date:
+        interaction_params.extend([start_date, end_date + ' 23:59:59'])
+    elif period == 'daily':
+        interaction_params.append(session['company_id'])
+    
+    # Add user parameter if not super_admin
+    if session['role'] != 'super_admin':
+        interaction_params.append(session['user_id'])
+    
     cursor.execute(f"""
         SELECT COUNT(*) as count 
         FROM interactions i
         JOIN leads l ON i.lead_id = l.id
         WHERE i.company_id = %s {date_filter.replace('l.created_at', 'i.created_at')} {user_filter.replace('l.assigned_user_id', 'i.user_id')}
-    """, params)
+    """, interaction_params)
     interaction_count = cursor.fetchone()['count']
     
-    # Get all lead IDs for bulk scoring
-    cursor.execute(f"SELECT id FROM leads l WHERE l.company_id = %s {date_filter} {user_filter}", params)
-    all_leads = cursor.fetchall()
-    lead_ids = [lead['id'] for lead in all_leads]
+    # Get lead scores from stored DB values (consistent with leads list and drilldown)
+    cursor.execute(f"SELECT score_category FROM leads l WHERE l.company_id = %s {date_filter} {user_filter}", params)
+    all_scores = cursor.fetchall()
     
-    # Bulk calculate scores for all leads at once
-    bulk_scores = calculate_lead_scores_bulk(lead_ids, session['company_id'])
-    
-    # Count hot, warm, cold leads from bulk results
-    hot_count = sum(1 for score, category in bulk_scores.values() if category == 'Hot')
-    warm_count = sum(1 for score, category in bulk_scores.values() if category == 'Warm')
-    cold_count = sum(1 for score, category in bulk_scores.values() if category == 'Cold')
+    hot_count  = sum(1 for s in all_scores if s.get('score_category') == 'Hot')
+    warm_count = sum(1 for s in all_scores if s.get('score_category') == 'Warm')
+    cold_count = sum(1 for s in all_scores if s.get('score_category') == 'Cold')
     
     # Calculate rates
     response_rate = (stats['contacted_leads'] / stats['total_leads'] * 100) if stats['total_leads'] > 0 else 0
