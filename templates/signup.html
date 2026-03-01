@@ -3,20 +3,29 @@
 {% block title %}Company Sign Up{% endblock %}
 
 {% block content %}
-<nav class="w-full bg-white border-b border-slate-100 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <div class="flex items-center justify-center p-2 rounded-xl bg-sky-600">
-                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-            </div>
-            <span class="font-bold text-xl tracking-tighter text-slate-950">Cliftons<span class="text-sky-600">Leads</span></span>
-        </div>
-        <a href="{{ url_for('landing') }}" class="text-sm font-semibold text-slate-600 hover:text-sky-600">
-            Back to Website
-        </a>
-    </div>
+<!-- ── NAV ── -->
+<nav style="position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:3px solid var(--ink);">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.85rem 1.25rem;max-width:1240px;margin:0 auto;">
+
+    <!-- Wordmark -->
+    <a href="{{ url_for('landing') }}" style="display:flex;flex-direction:column;align-items:flex-start;text-decoration:none;gap:.15rem;line-height:1;">
+      <div style="font-family:var(--serif);font-size:1.55rem;font-weight:800;color:var(--ink);letter-spacing:-.02em;line-height:1;">
+        ApplyIQ</span>
+      </div>
+      <div style="font-family:var(--sans);font-size:.55rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-muted);font-weight:600;">
+        Study Abroad CRM · India
+      </div>
+    </a>
+
+    <!-- Back link -->
+    <a href="{{ url_for('landing') }}"
+       style="font-family:var(--sans);font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:.45rem .9rem;border:1px solid var(--rule);transition:background .12s,color .12s;"
+       onmouseover="this.style.background='var(--bg-warm)';this.style.color='var(--accent)'"
+       onmouseout="this.style.background='';this.style.color='var(--ink)'">
+      ← Back to Website
+    </a>
+
+  </div>
 </nav>
 
 <div class="min-h-[calc(100vh-73px)] flex items-center justify-center p-4 bg-slate-50">
